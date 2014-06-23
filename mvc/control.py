@@ -2,16 +2,19 @@ import pygame, sys
 from mvc.gamedata import BaseGamedata
 from mvc.state import BaseState
 from mvc.settings import BaseSettings
+from mvc.resource import ResourceHandler
 
 class BaseControl:
 
     settings_class = BaseSettings
     game_data_class = BaseGamedata
     first_state_type = None
+    resource_dict = "resource"
     
     def __init__(self):
         self.next_state_type = self.first_state_type
         self.settings = BaseSettings()
+        self.resource = ResourceHandler(self.resource_dict)
         self.current_state = None
         self.state_stack = []
 
@@ -26,6 +29,7 @@ class BaseControl:
         return self.current_state
         
     def run(self):
+        pygame.display.set_mode(self.settings.size)
         while self.load_next_state():
             try:
                 self.current_state.run()
@@ -33,7 +37,7 @@ class BaseControl:
                 break
         self.safe_exit()     
 
-    def register_next_state_type(self, state_type):
+    def register_next_state(self, state_type):
         self.next_state_type = state_type
 
     def push_current_state(self):

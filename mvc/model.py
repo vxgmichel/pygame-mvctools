@@ -10,6 +10,10 @@ class BaseModel:
         self.children = {}
         if not self.root:
             self.parent.register_child(self)
+        self.init()
+
+    def init(self):
+        pass
 
     def register_child(self, child):
         self.children[child.key] = child
@@ -17,8 +21,11 @@ class BaseModel:
     def update_children(self):
         [obj.update() for obj in self.children]
 
+    def _update(self):
+        return self.update_children() or self.update()
+
     def update(self):
-        self.update_children()
+        pass
             
     def __iter__(self):
         iterators = [iter(child) for child in self.children]

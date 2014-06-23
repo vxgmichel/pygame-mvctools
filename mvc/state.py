@@ -23,7 +23,7 @@ class BaseState:
     def tick(self):
         mvc = self.controller, self.model, self.view
         try:
-            return any(entity.update() for entity in mvc)
+            return any(entity._update() for entity in mvc)
         except NextStateException:
             return False
 

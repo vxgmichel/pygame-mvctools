@@ -12,19 +12,25 @@ class BaseView:
     def __init__(self, control, model):
         self.model = model
         self.control = control
+        self.resource = self.control.resource
+        self.settings = self.control.settings
         self.sprite_dct = {}
         self.group = AutoGroup()
         self.screen = pg.display.get_surface()
         self.background = self.get_background()
+        self.init()
+
+    def init(self):
+        pass
 
     def get_background(self):
         return None
 
     def check_screen(self):
         if self.screen is not pg.display.get_surface():
-            self.__init__(self.game, self.model)
+            self.__init__(self.control, self.model)
 
-    def update(self):
+    def _update(self):
         # Update, draw and display
         self.gen_sprites()
         self.group.update()
@@ -36,10 +42,10 @@ class BaseView:
             if key not in self.sprite_dct:
                 cls = self.get_sprite_class(obj)
                 if cls:
-                    self.dct[key] = cls(self.group, obj)
+                    self.sprite_dct[key] = cls(self, obj)
 
     def get_sprite_class(self, obj):
-        return self.sprite_class_dct.get(type(obj), None)
+        return self.sprite_class_dct.get(obj.__class__, None)
 
     @classmethod
     def register_sprite_class(cls, obj_cls, sprite_cls):
@@ -48,29 +54,51 @@ class BaseView:
 
 class AutoSprite(DirtySprite):
 
-    def __init__(self, group, model):
+    def __init__(self, parent, model=None):
         super(AutoSprite, self).__init__()
         # Internal variables
-        self._image = None
-        self._rect = None
+        self._image = Surface((0,0))
+        self._rect = AutoRect(self.image.get_rect())
+        # Parent handling
+        self.parent = parent
+        if isinstance(parent, AutoSprite):
+            parent.register_child(self)
         # Group handling
-        self.group = group
+        self.group = parent.group
         self.group.add(self)
         # Model
-        self.model = model
+        self.model = model if model else parent.model
+        # Resource
+        self.resource = parent.resource
+        # Settings
+        self.settings = parent.settings
+        # Children
+        self.children = []
+        # Init
+        self.init()
+
+    def init(self):
+        pass
 
     def update(self):
         self.image = self.get_image()
         self.rect = self.get_rect()
         self.layer = self.get_layer()
 
+    def kill(self):
+        [child.kill() for child in self.children]
+        super(AutoSprite, self).kill()
+
+    def register_child(self, child):
+        self.children.append(child)
+
     # Method to override
 
     def get_rect(self):
-        return AutoRect(self.image.get_rect())
+        return self.rect
     
     def get_image(self):
-        return Surface((0,0))
+        return self.image
 
     def get_layer(self):
         return 0
