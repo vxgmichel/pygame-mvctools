@@ -1,5 +1,6 @@
 import os, sys
 import pygame
+from itertools import chain, ifilter
 
 # Loaders
 
@@ -39,6 +40,8 @@ class ResourceHandler:
         self._subdir_dict = {subdir: ResourceHandler(self._join(subdir))
                              for subdir in self._subdirs}
         self._resource_dict = {}
+        self._subdirs.sort()
+        self._files.sort()
 
     def _join(self, path):
         return os.path.join(self._dir, path)
@@ -63,6 +66,13 @@ class ResourceHandler:
                 resource = self._loader_dict[ext](self._join(valid_file))
                 self._resource_dict[attr] = resource
                 return resource
-        msg = "No loader can be found for file(s) '{}.*'".format(self._join(attr))
-        raise AttributeError(msg)
+        return None
+
+    def __iter__(self):
+        itersub = chain(*(iter(getattr(self,sub)) for sub in self._subdirs))
+        files = (getattr(self,f.split(".")[0]) for f in self._files)
+        files = ifilter(None, files)
+        return chain(files, itersub)
+
+    
         

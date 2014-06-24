@@ -1,4 +1,5 @@
 import pygame
+from mvc.xy import XY
 
 class BaseSettings:
     def __init__(self):
@@ -8,7 +9,7 @@ class BaseSettings:
 
     @property
     def size(self):
-        return self.width, self.height
+        return XY(self.width, self.height)
 
     @size.setter
     def size(self, size):
