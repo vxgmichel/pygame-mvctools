@@ -7,6 +7,8 @@ class BaseModel:
         self.parent = None if self.root else parent
         self.keygen = count() if self.root else self.parent.keygen
         self.key = next(self.keygen)
+        self.counter = count()
+        self.count = 0
         self.children = {}
         if not self.root:
             self.parent.register_child(self)
@@ -22,6 +24,7 @@ class BaseModel:
         [obj.update() for obj in self.children]
 
     def _update(self):
+        self.count = next(self.counter)
         return self.update_children() or self.update()
 
     def update(self):

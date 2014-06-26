@@ -8,20 +8,19 @@ from pygame import Color
 
 class LoadingModel(BaseModel):
 
+    next_state = None
+
     def init(self):
-        # Simulate a resource loader
-        self.total = 500
-        self.resource_loader = iter(xrange(self.total))
-        self.index = 0
+        self.done = False
+        self.control.resource.load(threaded=True, callback=self.callback)
         
     def update(self):
-        # Load a ressource
-        self.index = next(self.resource_loader, None)
-        # Stop case
-        if self.index is None:
-            self.control.register_next_state(LoadingState)
+        if self.done:
+            self.control.register_next_state(self.next_state)
             return True
-        
+
+    def callback(self):
+        self.done = True
 
 # Sprite classes
 
@@ -55,16 +54,16 @@ class LoadingSprite(AutoSprite):
 class LoadingLogoSprite(AutoSprite):
 
     nb_dot = 5
-    nb_cycle = 3
+    period = 0.2
     
     def init(self):
         self.images = []
         self.renderer = self.parent.renderer
         self.images = [self.renderer("."*i) for i in xrange(1, self.nb_dot+1)]
+        self.frame_period = int(self.settings.fps * self.period)
 
     def get_image(self):
-        factor = float(len(self.images) * self.nb_cycle)/self.model.total
-        index = int(factor*self.model.index)%len(self.images)
+        index = (self.model.count/self.frame_period)%len(self.images)
         return self.images[index]
 
     def get_rect(self):
