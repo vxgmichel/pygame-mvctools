@@ -1,7 +1,7 @@
 from itertools import count, chain
 
 class BaseModel:
-    def __init__(self, parent=None):
+    def __init__(self, parent, *args, **kargs):
         self.root = not isinstance(parent, BaseModel)
         self.control = parent if self.root else parent.control
         self.parent = None if self.root else parent
@@ -12,16 +12,16 @@ class BaseModel:
         self.children = {}
         if not self.root:
             self.parent.register_child(self)
-        self.init()
+        self.init(*args, **kargs)
 
-    def init(self):
+    def init(self, *args, **kwargs):
         pass
 
     def register_child(self, child):
         self.children[child.key] = child
         
     def update_children(self):
-        [obj.update() for obj in self.children]
+        [obj.update() for obj in self.children.values()]
 
     def _update(self):
         self.count = next(self.counter)
@@ -31,6 +31,6 @@ class BaseModel:
         pass
             
     def __iter__(self):
-        iterators = [iter(child) for child in self.children]
+        iterators = [iter(child) for child in self.children.values()]
         value = (self.key, self)
         return chain([value], *iterators)

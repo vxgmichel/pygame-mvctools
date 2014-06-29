@@ -11,12 +11,16 @@ class BaseController:
     
     def _update(self):
         for ev in pg.event.get():
-            if self.handle_event(ev):
+            if self._handle_event(ev):
                 return True
 
-    def handle_event(self, event):
+    def _handle_event(self, event):
         if self.is_quit_event(event):
                 return True
+        return self.handle_event(event)
+
+    def handle_event(self, event):
+        pass
 
     def is_quit_event(self, event):
         return event.type == pg.QUIT

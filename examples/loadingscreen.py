@@ -4,6 +4,8 @@ from mvc.controller import BaseController
 from mvc.view import BaseView, AutoSprite
 from pygame import Color
 
+from menuscreen import MenuState
+
 # Model
 
 class LoadingModel(BaseModel):

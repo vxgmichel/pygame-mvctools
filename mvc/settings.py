@@ -1,5 +1,5 @@
 import pygame
-from mvc.xy import XY
+from mvc.common import XY
 
 class BaseSettings:
     def __init__(self):
@@ -18,11 +18,10 @@ class BaseSettings:
     def get_fps(self):
         return self.fps
 
-    def scale_as_background(self, image, color=None):
-        scaled = pygame.transform.smoothscale(image, self.size)
-        if not color:
-            return scaled
+    def scale_as_background(self, image=None, color=(0,0,0)):
         bgd = pygame.Surface(self.size)
         bgd.fill(color)
-        bgd.blit(scaled, scaled.get_rect())
+        if image is not None:
+            scaled = pygame.transform.smoothscale(image, self.size)
+            bgd.blit(scaled, scaled.get_rect())
         return bgd

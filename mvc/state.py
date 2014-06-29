@@ -25,7 +25,7 @@ class BaseState:
         try:
             return any(entity._update() for entity in mvc)
         except NextStateException:
-            return False
+            return True
 
     def run(self):
         clock = self.clock_class()
