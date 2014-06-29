@@ -1,7 +1,7 @@
 import pygame
 from mvc.common import XY
 
-class BaseSettings:
+class BaseSettings(object):
     def __init__(self):
         self.fps = 40
         self.width = 800
@@ -12,8 +12,8 @@ class BaseSettings:
         return XY(self.width, self.height)
 
     @size.setter
-    def size(self, size):
-        self.width, self.height = size
+    def size(self, value):
+        self.width, self.height = value
         
     def get_fps(self):
         return self.fps

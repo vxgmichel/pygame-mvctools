@@ -28,10 +28,18 @@ class BaseState:
             return True
 
     def run(self):
+        # Display fps
+        if self.control.display_fps:
+            string = self.control.window_title + "   FPS = {:3}"
+        else:
+            string = None
         clock = self.clock_class()
-        fps_func = self.control.get_fps
         self.view.check_screen()
         while not self.tick():
-            clock.tick(fps_func())
+            clock.tick(self.control.settings.fps)
+            if string:
+                caption = string.format(int(clock.get_fps()))
+                pygame.display.set_caption(caption)
+            
 
         

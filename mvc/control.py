@@ -10,6 +10,8 @@ class BaseControl:
     game_data_class = BaseGamedata
     first_state_type = None
     resource_dict = "resource"
+    window_title = "Pygame"
+    display_fps = True
     
     def __init__(self):
         self.next_state_type = self.first_state_type
@@ -29,13 +31,19 @@ class BaseControl:
         return self.current_state
         
     def run(self):
+        # Prepare the run
         pygame.display.set_mode(self.settings.size)
+        self.pre_run()
+        # Loop over the states
         while self.load_next_state():
             try:
                 self.current_state.run()
             except SystemExit:
                 break
-        self.safe_exit()     
+        self.safe_exit()
+
+    def pre_run(self):
+        pass
 
     def register_next_state(self, state_type):
         self.next_state_type = state_type
