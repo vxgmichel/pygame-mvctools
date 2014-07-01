@@ -16,9 +16,9 @@ class BaseState:
     
     def __init__(self, control):
         self.control = control
-        self.model = self.model_class(control)
-        self.controller = self.controller_class(control, self.model)
-        self.view = self.view_class(control, self.model)
+        self.model = self.model_class(self)
+        self.controller = self.controller_class(self, self.model)
+        self.view = self.view_class(self, self.model)
 
     def tick(self):
         mvc = self.controller, self.model, self.view

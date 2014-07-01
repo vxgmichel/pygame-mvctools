@@ -2,16 +2,22 @@ from itertools import count, chain
 
 class BaseModel:
     def __init__(self, parent, *args, **kargs):
-        self.root = not isinstance(parent, BaseModel)
-        self.control = parent if self.root else parent.control
-        self.parent = None if self.root else parent
-        self.keygen = count() if self.root else self.parent.keygen
-        self.key = next(self.keygen)
-        self.counter = count()
+        self.isroot = not isinstance(parent, BaseModel)
+        # Attributes to higher instances
+        self.state = parent if self.isroot else parent.state
+        self.control = parent.control
+        # Semi private attribute
+        self._keygen = count() if self.isroot else parent._keygen
+        self._counter = count()
+        # Useful attributes
+        self.key = next(self._keygen)
         self.count = 0
+        # Children and parent handling
+        self.parent = parent
         self.children = {}
-        if not self.root:
+        if not self.isroot:
             self.parent.register_child(self)
+        # Call user initialisation
         self.init(*args, **kargs)
 
     def init(self, *args, **kwargs):
@@ -21,10 +27,10 @@ class BaseModel:
         self.children[child.key] = child
         
     def update_children(self):
-        [obj.update() for obj in self.children.values()]
+        [obj._update() for obj in self.children.values()]
 
     def _update(self):
-        self.count = next(self.counter)
+        self.count = next(self._counter)
         return self.update_children() or self.update()
 
     def update(self):

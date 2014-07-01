@@ -1,8 +1,9 @@
 import pygame as pg
 
 class BaseController:
-    def __init__(self, control, model):
-        self.control = control
+    def __init__(self, state, model):
+        self.state = state
+        self.control = self.state.control
         self.model = model
         self.init()
 

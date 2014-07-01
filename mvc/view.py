@@ -1,6 +1,6 @@
 import pygame as pg
 from pygame.sprite import LayeredDirty, DirtySprite
-from pygame import Rect, Surface
+from pygame import Rect, Surface, transform
 from functools import partial
 
 AutoGroup = partial(LayeredDirty, _use_updates = True, _time_threshold = 1000)
@@ -9,15 +9,19 @@ class BaseView:
 
     sprite_class_dct = {}
 
-    def __init__(self, control, model):
+    def __init__(self, state, model):
+        # Attributes to higher instances
+        self.state = state
         self.model = model
-        self.control = control
+        self.control = self.state.control
         self.resource = self.control.resource
         self.settings = self.control.settings
+        # View-related attributes
         self.sprite_dct = {}
         self.group = AutoGroup()
         self.screen = pg.display.get_surface()
         self.background = self.get_background()
+        # Call user initialisation
         self.init()
 
     def init(self):
@@ -53,6 +57,8 @@ class BaseView:
         
 
 class AutoSprite(DirtySprite):
+
+    size_ratio = None
 
     def __init__(self, parent, model=None):
         super(AutoSprite, self).__init__()
@@ -107,6 +113,21 @@ class AutoSprite(DirtySprite):
 
     def set_dirty(self):
         self.dirty = self.dirty if self.dirty else 1
+
+    # Conveniance methods
+    def build_animation(self, resource, period, scale=True):
+        images = [self.scale(image) for image in resource] if scale else list(resource)
+        frame_period = self.settings.fps * period / len(images)
+        while True:
+            index = int(self.model.count/frame_period)%len(images)
+            yield images[index]
+
+    def scale(self, image):
+        if not self.size_ratio:
+            return image
+        size = (self.settings.size * self.size_ratio).map(int)
+        return transform.smoothscale(image, size)
+            
 
     # Layer property
 

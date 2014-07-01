@@ -29,11 +29,10 @@ class MenuController(BaseController):
 
 class MenuModel(BaseModel):
 
-    state_dct = OrderedDict([])
     title = "Example v1.0"
 
     def init(self):
-        iterator = enumerate(self.state_dct.iteritems())
+        iterator = enumerate(self.state.state_dct.iteritems())
         self.entry_dct = [EntryModel(self, i, entry, state)
                           for i, (entry, state) in iterator]
         self.cursor = Cursor(self.entry_dct)
@@ -150,10 +149,6 @@ class BackgroundSprite(AutoSprite):
                 self.step *= factor
                 return rect
 
-    def scale(self, image):
-        total_size = (self.settings.size*self.size_ratio).map(int)
-        return pg.transform.smoothscale(image, total_size)
-
 # View class
 
 class MenuView(BaseView):
@@ -166,4 +161,5 @@ class MenuState(BaseState):
     model_class = MenuModel
     controller_class = MenuController
     view_class = MenuView
+    state_dct = OrderedDict([])
 

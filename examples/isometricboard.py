@@ -4,6 +4,8 @@ from mvc.controller import BaseController
 from mvc.view import BaseView, AutoSprite
 from mvc.common import Cursor, XY
 
+from itertools import cycle
+
 from pygame import Color, Rect
 import pygame as pg
 
@@ -38,18 +40,21 @@ class BlockModel(TileModel):
 class FloorModel(TileModel):
     pass
 
+class BlackHoleModel(TileModel):
+    pass
+
 class BorderModel(TileModel):
     pass
 
 class BoardModel(BaseModel):
 
-    next_state = None
     type_dct = {-1: BorderModel,
                  1: FloorModel,
+                 5: BlackHoleModel,
                  6: BlockModel}
     board = [[6,1,1,6],
              [1,1,1,1],
-             [1,1,1,6]]
+             [5,1,1,6]]
 
     def init(self):
         self.tile_dct = self.build_tiles(self.board)
@@ -58,7 +63,7 @@ class BoardModel(BaseModel):
         self.nb_column = self.max_coordinate.x + 1
     
     def register_validation(self):
-        self.control.register_next_state(self.next_state)
+        self.control.register_next_state(self.state.next_state)
         raise NextStateException
 
     def build_tiles(self, mat):
@@ -89,7 +94,6 @@ class TileSprite(AutoSprite):
 
     adjustment = 0.75
     size_ratio = 0.15, 0.1
-    initial_ratio = 141.0/216
 
     def init(self):
         self.size = (self.settings.size*self.size_ratio).map(int)
@@ -128,6 +132,20 @@ class BlockSprite(TileSprite):
         super(BlockSprite, self).init()
         self.image = self.scale(self.resource.image.block)
 
+class BlackHoleSprite(TileSprite):
+
+    period = 1.5
+
+    def init(self):
+        super(BlackHoleSprite, self).init()
+        resource = self.resource.image.black_hole
+        self.animation = self.build_animation(resource, self.period)
+
+    def get_image(self):
+        return next(self.animation)
+        
+        
+
 class BorderSprite(TileSprite):
 
     def init(self):
@@ -141,6 +159,7 @@ class BoardView(BaseView):
     bgd_color = Color("white")
     sprite_class_dct = {BlockModel: BlockSprite,
                         FloorModel: FloorSprite,
+                        BlackHoleModel: BlackHoleSprite,
                         BorderModel: BorderSprite}
 
     def get_background(self):
@@ -152,4 +171,5 @@ class BoardState(BaseState):
     model_class = BoardModel
     controller_class = BoardController
     view_class = BoardView
+    next_state = None
 

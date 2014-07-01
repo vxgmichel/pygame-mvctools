@@ -8,22 +8,22 @@ class BaseControl:
 
     settings_class = BaseSettings
     game_data_class = BaseGamedata
-    first_state_type = None
+    first_state = None
     resource_dict = "resource"
     window_title = "Pygame"
     display_fps = True
     
     def __init__(self):
-        self.next_state_type = self.first_state_type
+        self.next_state = self.first_state
         self.settings = BaseSettings()
         self.resource = ResourceHandler(self.resource_dict)
         self.current_state = None
         self.state_stack = []
 
     def load_next_state(self):
-        if self.next_state_type:
-            self.current_state = self.next_state_type(self)
-            self.next_state_type = None
+        if self.next_state:
+            self.current_state = self.next_state(self)
+            self.next_state = None
         elif self.state_stack:
             self.current_state = self.pop_state()
         else:
@@ -45,8 +45,8 @@ class BaseControl:
     def pre_run(self):
         pass
 
-    def register_next_state(self, state_type):
-        self.next_state_type = state_type
+    def register_next_state(self, state):
+        self.next_state = state
 
     def push_current_state(self):
         self.state_stack.append(self.current_state)

@@ -10,15 +10,13 @@ from menuscreen import MenuState
 
 class LoadingModel(BaseModel):
 
-    next_state = None
-
     def init(self):
         self.done = False
         self.control.resource.load(threaded=True, callback=self.callback)
         
     def update(self):
         if self.done:
-            self.control.register_next_state(self.next_state)
+            self.control.register_next_state(self.state.next_state)
             return True
 
     def callback(self):
@@ -56,17 +54,16 @@ class LoadingSprite(AutoSprite):
 class LoadingLogoSprite(AutoSprite):
 
     nb_dot = 5
-    period = 0.2
+    period = 1
     
     def init(self):
         self.images = []
         self.renderer = self.parent.renderer
         self.images = [self.renderer("."*i) for i in xrange(1, self.nb_dot+1)]
-        self.frame_period = int(self.settings.fps * self.period)
+        self.animation = self.build_animation(self.images, self.period)
 
     def get_image(self):
-        index = (self.model.count/self.frame_period)%len(self.images)
-        return self.images[index]
+        return next(self.animation)
 
     def get_rect(self):
         return self.image.get_rect(topleft=self.parent.rect.topright)
@@ -88,4 +85,5 @@ class LoadingState(BaseState):
     model_class = LoadingModel
     controller_class = BaseController
     view_class = LoadingView
+    next_state = None
 
