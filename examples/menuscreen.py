@@ -2,7 +2,7 @@ from mvc.state import BaseState, NextStateException
 from mvc.model import BaseModel
 from mvc.controller import BaseController
 from mvc.view import BaseView, AutoSprite
-from mvc.common import Cursor
+from mvc.common import cursoredlist
 
 from collections import OrderedDict
 
@@ -35,7 +35,7 @@ class MenuModel(BaseModel):
         iterator = enumerate(self.state.state_dct.iteritems())
         self.entry_dct = [EntryModel(self, i, entry, state)
                           for i, (entry, state) in iterator]
-        self.cursor = Cursor(self.entry_dct)
+        self.cursor = cursoredlist(self.entry_dct)
         self.cursor.get().selected = True
         
     def register_validation(self):

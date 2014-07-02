@@ -2,9 +2,7 @@ from mvc.state import BaseState, NextStateException
 from mvc.model import BaseModel
 from mvc.controller import BaseController
 from mvc.view import BaseView, AutoSprite
-from mvc.common import Cursor, XY
-
-from itertools import cycle
+from mvc.common import xytuple
 
 from pygame import Color, Rect
 import pygame as pg
@@ -18,7 +16,7 @@ class BoardController(BaseController):
            event.key in [pg.K_SPACE, pg.K_RETURN]:
             self.model.register_validation()
 
-# Model
+# Tile Models
 
 class TileModel(BaseModel):
     
@@ -27,11 +25,11 @@ class TileModel(BaseModel):
 
     @property
     def pos(self):
-        return XY(*self._pos)
+        return xytuple(*self._pos)
 
     @pos.setter
     def pos(self, value):
-        self._pos = XY(*value)
+        self._pos = xytuple(*value)
         
 
 class BlockModel(TileModel):
@@ -46,6 +44,8 @@ class BlackHoleModel(TileModel):
 class BorderModel(TileModel):
     pass
 
+# Board Model
+
 class BoardModel(BaseModel):
 
     type_dct = {-1: BorderModel,
@@ -58,7 +58,7 @@ class BoardModel(BaseModel):
 
     def init(self):
         self.tile_dct = self.build_tiles(self.board)
-        self.max_coordinate = XY(*max(self.tile_dct))
+        self.max_coordinate = xytuple(*max(self.tile_dct))
         self.nb_line = self.max_coordinate.x + 1
         self.nb_column = self.max_coordinate.x + 1
     
@@ -111,7 +111,7 @@ class TileSprite(AutoSprite):
         return pos.x * self.model.parent.nb_column + pos.y
 
     def isoconvert(self, pos):
-        pos = XY(pos.y-pos.x, pos.x+pos.y)
+        pos = xytuple(pos.y-pos.x, pos.x+pos.y)
         pos *= self.size * (0.5, 0.5)
         return pos.map(int)
 
@@ -143,8 +143,6 @@ class BlackHoleSprite(TileSprite):
 
     def get_image(self):
         return next(self.animation)
-        
-        
 
 class BorderSprite(TileSprite):
 
@@ -156,14 +154,14 @@ class BorderSprite(TileSprite):
 # View class
 
 class BoardView(BaseView):
-    bgd_color = Color("white")
+    bgd_color = Color("lightblue")
     sprite_class_dct = {BlockModel: BlockSprite,
                         FloorModel: FloorSprite,
                         BlackHoleModel: BlackHoleSprite,
                         BorderModel: BorderSprite}
 
     def get_background(self):
-        return self.settings.scale_as_background(color = self.bgd_color)
+        return self.settings.scale_as_background(color=self.bgd_color)
 
 # Loading state              
 
