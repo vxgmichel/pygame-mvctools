@@ -1,5 +1,5 @@
 import pygame
-from mvc.common import xytuple
+from mvctools.common import xytuple
 
 class BaseSettings(object):
     def __init__(self):

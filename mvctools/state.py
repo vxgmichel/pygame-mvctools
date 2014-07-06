@@ -1,8 +1,8 @@
 
 import pygame
-from mvc.model import BaseModel
-from mvc.controller import BaseController
-from mvc.view import BaseView
+from mvctools.model import BaseModel
+from mvctools.controller import BaseController
+from mvctools.view import BaseView
 
 
 class NextStateException(Exception):
