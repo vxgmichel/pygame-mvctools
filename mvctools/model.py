@@ -1,11 +1,12 @@
 from itertools import count, chain
 
-class BaseModel:
+class BaseModel(object):
     def __init__(self, parent, *args, **kargs):
         self.isroot = not isinstance(parent, BaseModel)
         # Attributes to higher instances
         self.state = parent if self.isroot else parent.state
         self.control = parent.control
+        self.gamedata = self.control.gamedata
         # Semi private attribute
         self._keygen = count() if self.isroot else parent._keygen
         self._counter = count()

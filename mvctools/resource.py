@@ -25,7 +25,7 @@ def load_music(path):
     return pygame.mixer.music.load(resource_path(path))
 
 def load_file(path):
-    return open(resource_path(path))
+    return open(resource_path(path)).read().split('\n')
 
 # Handler
 
@@ -34,7 +34,8 @@ class ResourceHandler:
     _loader_dict = {".ttf":load_font,
                     ".png":load_image,
                     ".jpg":load_image,
-                    ".bmp":load_image,}
+                    ".bmp":load_image,
+                    ".txt":load_file,}
     
     def __init__(self, directory):
         self._dir, self._subdirs, self._files = next(walk(directory))
