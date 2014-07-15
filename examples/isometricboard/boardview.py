@@ -74,10 +74,10 @@ class BlackHoleSprite(TileSprite):
     def init(self):
         super(BlackHoleSprite, self).init()
         resource = self.resource.image.black_hole
-        self.animation = self.build_animation(resource, self.period)
+        self.animation = self.build_animation(resource, sup=self.period)
 
     def get_image(self):
-        return next(self.animation)
+        return self.animation.get()
 
 class PlayerSprite(TileSprite):
 
@@ -93,7 +93,7 @@ class PlayerSprite(TileSprite):
         super(PlayerSprite, self).init() 
         resource_dct = {direction: self.get_folder(direction)
                         for direction in self.direction_dct}   
-        self.animation_dct = {di: self.build_animation(re, self.period)
+        self.animation_dct = {di: self.build_animation(re, sup=self.period)
                               for di ,re in resource_dct.items()}   
 
     def get_folder(self, direction):
@@ -102,7 +102,7 @@ class PlayerSprite(TileSprite):
         return getattr(self.resource.image, name)
 
     def get_image(self):
-        return next(self.animation_dct[self.model.dir])
+        return self.animation_dct[self.model.dir].get()
 
     def get_layer(self):
         return super(PlayerSprite, self).get_layer() + 0.5

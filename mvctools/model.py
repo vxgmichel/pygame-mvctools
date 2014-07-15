@@ -9,10 +9,8 @@ class BaseModel(object):
         self.gamedata = self.control.gamedata
         # Semi private attribute
         self._keygen = count() if self.isroot else parent._keygen
-        self._counter = count()
         # Useful attributes
         self.key = next(self._keygen)
-        self.count = 0
         # Children and parent handling
         self.parent = parent
         self.children = {}
@@ -22,7 +20,7 @@ class BaseModel(object):
         self.init(*args, **kargs)
 
     def init(self, *args, **kwargs):
-        pass
+        self.lifetime = Timer(self).start()
 
     def register_child(self, child):
         self.children[child.key] = child
@@ -31,8 +29,7 @@ class BaseModel(object):
         [obj._update() for obj in self.children.values()]
 
     def _update(self):
-        self.count = next(self._counter)
-        return self.update_children() or self.update()
+        return self.update() or self.update_children()
 
     def update(self):
         pass
@@ -41,3 +38,66 @@ class BaseModel(object):
         iterators = [iter(child) for child in self.children.values()]
         value = (self.key, self)
         return chain([value], *iterators)
+
+class Timer(BaseModel):
+
+    def init(self, start=0, stop=None, periodic=False, callback=None):
+        self._start = float("-inf") if start is None else start
+        self._stop = float("inf") if stop is None else stop
+        if self._start > self._stop:
+            raise AttributeError("Invalid Range")
+        self._periodic = periodic
+        self._callback = callback
+        self._ratio = 0.0
+        self._current_value = float(start)
+        self._next_increment = 0.0
+
+    def get_interval(self):
+        return self._start, self._stop
+
+    def start(self, ratio=1.0):
+        self._ratio = float(ratio)
+        return self
+
+    def pause(self):
+        self._ratio = 0.0
+        return self
+
+    def get(self):
+        return self._current_value
+
+    def reset_and_pause(self):
+        self._current_value = self._start
+        return self.pause()
+
+    def set_and_pause(self, value=None):
+        value = self._stop if value is None else value
+        if self._start <= value <= self._stop:
+            self._current_value = float(value)
+            return self.pause()
+        raise AttributeError("Invalid value")
+
+    def modulo_adjust(self):
+        self._current_value -= self._start
+        self._current_value %= self._stop - self._start
+        self._current_value += self._start
+
+    def update(self):
+        # Increment
+        self._current_value += self._next_increment
+        # Overflow
+        if self._next_increment and \
+           not self._start < self._current_value < self._stop:
+            if self._periodic:
+                self.modulo_adjust()
+            elif self._current_value <= self._start:
+                self.reset_and_pause()
+            else:
+                self.set_and_pause()
+            if callable(self.callback):
+                callback(self)
+        # Prepare next increment
+        delta = 1.0/self.control.settings.fps
+        self._next_increment = delta*self._ratio
+        
+    

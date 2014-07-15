@@ -1,5 +1,5 @@
 from mvctools.state import NextStateException
-from mvctools.model import BaseModel
+from mvctools.model import BaseModel, Timer
 from mvctools.common import xytuple, cursoredlist
 from collections import defaultdict
 from functools import partial
@@ -33,6 +33,7 @@ class PlayerModel(TileModel):
 
     def init(self, pos, pid):
         super(PlayerModel, self).init(pos)
+        self.lifetime = Timer(self).start()
         self.id = pid
         self.dir = xytuple(0,1)
         self.activedir = False
@@ -44,7 +45,10 @@ class GoalModel(TileModel):
         self.id = pid
 
 class BlackHoleModel(TileModel):
-    pass
+
+    def init(self, pos):
+        super(BlackHoleModel, self).init(pos)
+        self.lifetime = Timer(self).start()
 
 class BorderModel(TileModel):
     pass

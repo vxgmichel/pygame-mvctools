@@ -11,6 +11,7 @@ from menuscreen import MenuState
 class LoadingModel(BaseModel):
 
     def init(self):
+        super(LoadingModel, self).init()
         self.done = False
         self.control.resource.load(threaded=True, callback=self.callback)
         
@@ -54,16 +55,16 @@ class LoadingSprite(AutoSprite):
 class LoadingLogoSprite(AutoSprite):
 
     nb_dot = 5
-    period = 1
+    period = 2
     
     def init(self):
         self.images = []
         self.renderer = self.parent.renderer
         self.images = [self.renderer("."*i) for i in xrange(1, self.nb_dot+1)]
-        self.animation = self.build_animation(self.images, self.period)
+        self.animation = self.build_animation(self.images, sup=self.period)
 
     def get_image(self):
-        return next(self.animation)
+        return self.animation.get()
 
     def get_rect(self):
         return self.image.get_rect(topleft=self.parent.rect.topright)

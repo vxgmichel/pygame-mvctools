@@ -5,7 +5,7 @@ from functools import partial
 
 AutoGroup = partial(LayeredDirty, _use_updates = True, _time_threshold = 1000)
 
-class BaseView:
+class BaseView(object):
 
     sprite_class_dct = {}
 
@@ -118,12 +118,14 @@ class AutoSprite(DirtySprite):
         self.dirty = self.dirty if self.dirty else 1
 
     # Conveniance methods
-    def build_animation(self, resource, period, scale=True):
-        images = [self.scale(image) for image in resource] if scale else list(resource)
-        frame_period = self.settings.fps * period / len(images)
-        while True:
-            index = int(self.model.count/frame_period)%len(images)
-            yield images[index]
+    
+    def build_animation(self, resource, timer=None,
+                        inf=None, sup=None, looping=True, scale=True):
+        if scale:
+            resource = (self.scale(image) for image in resource)
+        if timer is None:
+            timer = self.model.lifetime
+        return Animation(resource, timer, inf, sup, looping)
 
     def scale(self, image):
         if not self.size_ratio:
@@ -185,6 +187,29 @@ class AutoSprite(DirtySprite):
     @rect.deleter
     def rect(self):
         del self._rect
+
+
+class Animation(object):
+
+    def __init__(self, resource, timer, inf=None, sup=None, looping=True):
+        self.images = list(resource)
+        self.timer = timer
+        start, stop = timer.get_interval()
+        self.inf = start if inf is None else inf
+        self.sup = stop if sup is None else sup
+        self.looping = looping
+
+    def get(self):
+        normalized = (self.timer.get() - self.inf) / (self.sup - self.inf)
+        index = int(normalized * len(self.images))
+        if self.looping:
+            index %= len(self.images)
+        elif normalized >= 1:
+            index = -1
+        elif normalized <= 0:
+            index = 0
+        return self.images[index]
+
 
 
 class UpgradingMetaClass(type):
