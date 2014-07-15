@@ -8,4 +8,5 @@ class BoardState(BaseState):
     controller_class = BoardController
     view_class = BoardView
     next_state = None
+    pause_state = None
 

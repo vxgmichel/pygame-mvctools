@@ -9,3 +9,6 @@ class BoardController(BaseController):
         if event.type == pg.KEYDOWN and \
            event.key in [pg.K_SPACE, pg.K_RETURN]:
             self.model.register_validation()
+        if event.type == pg.KEYDOWN and \
+           event.key in [pg.K_ESCAPE,]:
+            self.model.register_pause()

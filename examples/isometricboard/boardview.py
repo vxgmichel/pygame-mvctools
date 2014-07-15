@@ -4,7 +4,7 @@ from mvctools.common import xytuple
 
 # Model imports
 from boardmodel import BlockModel, FloorModel, BlackHoleModel, \
-                       BorderModel, PlayerModel
+                       BorderModel, PlayerModel, GoalModel
 
 # Pygame imports
 from pygame import Color
@@ -107,6 +107,26 @@ class PlayerSprite(TileSprite):
     def get_layer(self):
         return super(PlayerSprite, self).get_layer() + 0.5
 
+class GoalSprite(TileSprite):
+
+    period = 1.5
+    color_dct = {1 : "red",
+                 2 : "green",}
+
+    def init(self):
+        super(GoalSprite, self).init() 
+        self.images = [self.scale(image) for image in self.folder]
+        self.image = self.images[0]
+        
+    @property
+    def folder(self):
+        color = self.color_dct[self.model.id]
+        name = "_".join(("goal", color))
+        return getattr(self.resource.image, name)
+
+    def get_layer(self):
+        return super(GoalSprite, self).get_layer() + 0.5
+
 class BorderSprite(TileSprite):
 
     def init(self):
@@ -122,7 +142,8 @@ class BoardView(BaseView):
                         FloorModel: FloorSprite,
                         BlackHoleModel: BlackHoleSprite,
                         BorderModel: BorderSprite,
-                        PlayerModel: PlayerSprite}
+                        PlayerModel: PlayerSprite,
+                        GoalModel: GoalSprite}
 
     def get_background(self):
         return self.settings.scale_as_background(color=self.bgd_color)

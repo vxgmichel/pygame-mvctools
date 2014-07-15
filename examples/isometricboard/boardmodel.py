@@ -37,6 +37,12 @@ class PlayerModel(TileModel):
         self.dir = xytuple(0,1)
         self.activedir = False
 
+class GoalModel(TileModel):
+
+    def init(self, pos, pid):
+        super(GoalModel, self).init(pos)
+        self.id = pid
+
 class BlackHoleModel(TileModel):
     pass
 
@@ -58,6 +64,7 @@ class BoardModel(BaseModel):
             self.gamedata.board_clst = cursoredlist(resource_lst)
         # Build the board and tiles
         self.player_dct = {}
+        self.goal_dct = {}
         self.board = self.gamedata.board_clst.get()
         self.tile_dct = self.build_tiles(self.board)
         # Useful attributes
@@ -70,6 +77,11 @@ class BoardModel(BaseModel):
         isover = not self.gamedata.board_clst.cursor
         next_state = self.state.next_state if isover else self.state.__class__
         self.control.register_next_state(next_state)
+        raise NextStateException
+
+    def register_pause(self):
+        self.control.push_current_state()
+        self.control.register_next_state(self.state.pause_state)
         raise NextStateException
 
     def build_tiles(self, resource):
@@ -92,6 +104,10 @@ class BoardModel(BaseModel):
         middle = [[-1] + x + [-1] for x in mat]
         return first + middle + last
 
+    def build_goal(self, pos, pid):
+        self.goal_dct[pid] = GoalModel(self, pos, pid)
+        return FloorModel(self, pos)
+
     def build_player(self, pos, pid):
         self.player_dct[pid] = PlayerModel(self, pos, pid)
         floor = FloorModel(self, pos)
@@ -100,8 +116,8 @@ class BoardModel(BaseModel):
                                            
     type_dct = {-1: BorderModel,
                  1: FloorModel,
-                 2: FloorModel,
-                 3: FloorModel,
+                 2: partial(build_goal, pid=1),
+                 3: partial(build_goal, pid=2),
                  4: partial(build_player, pid=1),
                  5: partial(build_player, pid=2),
                  6: BlockModel,

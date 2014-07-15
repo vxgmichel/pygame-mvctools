@@ -32,9 +32,12 @@ class BaseView:
 
     def check_screen(self):
         if self.screen is not pg.display.get_surface():
-            self.__init__(self.control, self.model)
+            self.__init__(self, self.model)
+        self._update(update_all=True)
 
-    def _update(self):
+    def _update(self, update_all=False):
+        # Handle parameter
+        self.group._use_update = not update_all
         # Update, draw and display
         self.gen_sprites()
         self.group.update()

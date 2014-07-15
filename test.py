@@ -6,6 +6,7 @@ from mvctools.control import BaseControl
 from examples.loadingscreen import LoadingState
 from examples.menuscreen import MenuState
 from examples.isometricboard import BoardState
+from examples.pausescreen import PauseState
 
 # Create the main control
 class Example(BaseControl):
@@ -27,6 +28,7 @@ MenuState.state_dct["Settings"] = MenuState
 MenuState.state_dct["Credits"] = MenuState
 MenuState.state_dct["Quit"] = None
 BoardState.next_state = MenuState
+BoardState.pause_state = PauseState
 
 # Run the example  
 if __name__ == "__main__":
