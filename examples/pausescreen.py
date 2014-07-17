@@ -49,7 +49,7 @@ class PauseSprite(AutoSprite):
         return (self.settings.size * self.position_ratio).map(int)
 
     def build_renderer(self, size):
-        font = getattr(self.resource.font, self.font_name)(size)
+        font = self.resource.font.getfile(self.font_name, size)
         return lambda text: font.render(text, False, self.font_color)
 
 

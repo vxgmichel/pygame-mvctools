@@ -65,33 +65,26 @@ class EntryModel(BaseModel):
 
 class EntrySprite(AutoSprite):
     
-    u_font_ratio = 0.05
-    s_font_ratio = 0.1
+    font_ratios = {False: 0.065,
+                   True: 0.13,}
     font_name = "visitor2"
     font_color = Color("black")
     first_entry_position_ratio = (0.4, 0.6)
     relative_position_ratio = (0.1, 0.07)
     
     def init(self):
-        self.u_renderer = self.build_renderer(self.u_font_size)
-        self.s_renderer = self.build_renderer(self.s_font_size)
-        self.u_image = self.u_renderer(self.model.text)
-        self.s_image = self.s_renderer(self.model.text)
-        self.layer = 1
-
+        self.images = {}
+        for selection, ratio in self.font_ratios.items():
+            height = int(self.settings.size.y * ratio)
+            renderer = self.build_renderer(height)
+            image = renderer(self.model.text)
+            self.images[selection] = image
+                        
     def get_image(self):
-        return self.s_image if self.model.selected else self.u_image
+        return self.images[self.model.selected]
 
     def get_rect(self):
         return self.image.get_rect(center=self.center)
-
-    @property
-    def u_font_size(self):
-        return int(self.settings.width * self.u_font_ratio)
-
-    @property
-    def s_font_size(self):
-        return int(self.settings.width * self.s_font_ratio)
 
     @property
     def center(self):
@@ -99,8 +92,8 @@ class EntrySprite(AutoSprite):
         shift =  (self.settings.size * self.relative_position_ratio)
         return (first + shift * ((self.model.pos,)*2)).map(int)
 
-    def build_renderer(self, size):
-        font = getattr(self.resource.font, self.font_name)(size)
+    def build_renderer(self, size=None):
+        font = self.resource.font.getfile(self.font_name, size)
         return lambda text: font.render(text, False, self.font_color)
 
 class TitleSprite(AutoSprite):
@@ -125,7 +118,7 @@ class TitleSprite(AutoSprite):
         return (self.settings.size * self.position_ratio).map(int)
 
     def build_renderer(self, size):
-        font = getattr(self.resource.font, self.font_name)(size)
+        font = self.resource.font.getfile(self.font_name, size)
         return lambda text: font.render(text, False, self.font_color)
 
 class BackgroundSprite(AutoSprite):
@@ -136,7 +129,7 @@ class BackgroundSprite(AutoSprite):
 
     def init(self):
         self.title = TitleSprite(self)
-        self.image = self.scale(self.resource.image.get(self.background))
+        self.image = self.resource.image.getfile(self.background, self.size)
         self.screen_rect = Rect((0,0), self.settings.size)
         self.rect = self.image.get_rect(center=self.screen_rect.center)
         self.step = self.settings.size*self.speed_ratio

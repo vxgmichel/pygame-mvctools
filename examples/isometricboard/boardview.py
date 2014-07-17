@@ -16,9 +16,10 @@ class TileSprite(AutoSprite):
 
     adjustment = 0.75
     size_ratio = 0.08, 0.065
+    raw_ratio = 216.0/141
 
     def init(self):
-        self.size = (self.settings.size*self.size_ratio).map(int)
+        self.basesize = (self.settings.size*self.size_ratio).map(int)
         center = self.model.parent.max_coordinate * (0.5,0.5)
         center += (self.adjustment,)*2
         shift = self.settings.size/(2,2) - self.isoconvert(center)
@@ -34,13 +35,14 @@ class TileSprite(AutoSprite):
 
     def isoconvert(self, pos):
         pos = xytuple(pos.y-pos.x, pos.x+pos.y)
-        pos *= self.size * (0.5, 0.5)
+        pos *= self.basesize * (0.5, 0.5)
         return pos.map(int)
 
-    def scale(self, image):
-        ratio = float(image.get_height())/image.get_width()
-        size = self.size * (1, ratio * 3**0.5)
-        return pg.transform.smoothscale(image, size.map(int))
+    @property
+    def size(self):
+        #ratio = float(image.get_height())/image.get_width()
+        size = self.basesize * (1, self.raw_ratio * 3**0.5)
+        return size.map(int)
 
 class FloorSprite(TileSprite):
 
@@ -51,12 +53,12 @@ class FloorSprite(TileSprite):
     
     def init(self):
         super(FloorSprite, self).init()
-        self.resource_dct = {key: self.scale(self.get_resource(key))
+        self.resource_dct = {key: self.get_resource(key)
                              for key in self.color_dct}
 
     def get_resource(self, key):
         name = "_".join(("floor", self.color_dct[key]))
-        return getattr(self.resource.image.floor, name)
+        return self.resource.image.floor.getfile(name, self.size)
 
     def get_image(self):
         return self.resource_dct[sum(self.model.activation_dct)]
@@ -65,7 +67,7 @@ class BlockSprite(TileSprite):
 
     def init(self):
         super(BlockSprite, self).init()
-        self.image = self.scale(self.resource.image.block)
+        self.image = self.resource.image.getfile("block", self.size)
 
 class BlackHoleSprite(TileSprite):
 
@@ -74,7 +76,8 @@ class BlackHoleSprite(TileSprite):
     def init(self):
         super(BlackHoleSprite, self).init()
         resource = self.resource.image.black_hole
-        self.animation = self.build_animation(resource, sup=self.period)
+        self.animation = self.build_animation(resource, sup=self.period,
+                                              resize = self.size)
 
     def get_image(self):
         return self.animation.get()
@@ -93,13 +96,13 @@ class PlayerSprite(TileSprite):
         super(PlayerSprite, self).init() 
         resource_dct = {direction: self.get_folder(direction)
                         for direction in self.direction_dct}   
-        self.animation_dct = {di: self.build_animation(re, sup=self.period)
+        self.animation_dct = {di: self.build_animation(re, sup=self.period, resize=True)
                               for di ,re in resource_dct.items()}   
 
     def get_folder(self, direction):
         color = self.color_dct[self.model.id]
         name = "_".join((color, "player", self.direction_dct[direction]))
-        return getattr(self.resource.image, name)
+        return self.resource.image.getdir(name)
 
     def get_image(self):
         return self.animation_dct[self.model.dir].get()
@@ -115,7 +118,7 @@ class GoalSprite(TileSprite):
 
     def init(self):
         super(GoalSprite, self).init() 
-        self.images = [self.scale(image) for image in self.folder]
+        self.images = list(self.folder.iterator(formatting=self.size))
         self.image = self.images[0]
         
     @property
@@ -131,7 +134,7 @@ class BorderSprite(TileSprite):
 
     def init(self):
         super(BorderSprite, self).init()
-        self.image = self.scale(self.resource.image.border)
+        self.image = self.resource.image.getfile("border", self.size)
 
 
 # View class

@@ -17,7 +17,7 @@ class BaseController:
 
     def _handle_event(self, event):
         if self.is_quit_event(event):
-                return True
+                raise SystemExit
         return self.handle_event(event)
 
     def handle_event(self, event):

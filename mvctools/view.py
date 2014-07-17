@@ -2,6 +2,7 @@ import pygame as pg
 from pygame.sprite import LayeredDirty, DirtySprite
 from pygame import Rect, Surface, transform
 from functools import partial
+from mvctools.common import xytuple
 
 AutoGroup = partial(LayeredDirty, _use_updates = True, _time_threshold = 1000)
 
@@ -120,18 +121,17 @@ class AutoSprite(DirtySprite):
     # Conveniance methods
     
     def build_animation(self, resource, timer=None,
-                        inf=None, sup=None, looping=True, scale=True):
-        if scale:
-            resource = (self.scale(image) for image in resource)
+                        inf=None, sup=None, looping=True, resize=False):
         if timer is None:
             timer = self.model.lifetime
-        return Animation(resource, timer, inf, sup, looping)
-
-    def scale(self, image):
+        size = self.size if resize else None
+        return Animation(resource, timer, inf, sup, looping, size)
+    
+    @property
+    def size(self):
         if not self.size_ratio:
-            return image
-        size = (self.settings.size * self.size_ratio).map(int)
-        return transform.smoothscale(image, size)
+            return xytuple(*self.image.get_size())
+        return (self.settings.size * self.size_ratio).map(int)
             
 
     # Layer property
@@ -191,8 +191,14 @@ class AutoSprite(DirtySprite):
 
 class Animation(object):
 
-    def __init__(self, resource, timer, inf=None, sup=None, looping=True):
-        self.images = list(resource)
+    def __init__(self, resource, timer,
+                 inf=None, sup=None, looping=True, size=None):
+        if isinstance(resource, list):
+            no_scale = lambda image, arg: image
+            scale = no_scale if size is None else pg.transform.smoothscale
+            self.images = [scale(image, size) for image in resource]
+        else:
+            self.images = list(resource.iterator(size))
         self.timer = timer
         start, stop = timer.get_interval()
         self.inf = start if inf is None else inf

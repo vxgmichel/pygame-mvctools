@@ -27,7 +27,7 @@ class LoadingModel(BaseModel):
 
 class LoadingSprite(AutoSprite):
     
-    font_ratio = 0.05
+    font_ratio = 0.07
     font_name = "visitor2"
     font_text = "Loading"
     font_color = Color("black")
@@ -41,14 +41,14 @@ class LoadingSprite(AutoSprite):
 
     @property
     def font_size(self):
-        return int(self.settings.width * self.font_ratio)
+        return int(self.settings.height * self.font_ratio)
 
     @property
     def center(self):
         return (self.settings.size * self.position_ratio).map(int)
 
     def build_renderer(self):
-        font = getattr(self.resource.font, self.font_name)(self.font_size)
+        font = self.resource.font.getfile(self.font_name, self.font_size)
         return lambda text: font.render(text, False, self.font_color)
  
 
@@ -60,7 +60,8 @@ class LoadingLogoSprite(AutoSprite):
     def init(self):
         self.images = []
         self.renderer = self.parent.renderer
-        self.images = [self.renderer("."*i) for i in xrange(1, self.nb_dot+1)]
+        self.images = [self.renderer("."*i).convert_alpha()
+                       for i in xrange(1, self.nb_dot+1)]
         self.animation = self.build_animation(self.images, sup=self.period)
 
     def get_image(self):
