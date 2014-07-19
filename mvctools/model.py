@@ -55,6 +55,15 @@ class Timer(BaseModel):
     def get_interval(self):
         return self._start, self._stop
 
+    def is_set(self):
+        return self._current_value == self._stop
+
+    def is_reset(self):
+        return self._current_value == self._start
+
+    def is_paused(self):
+        return self._ratio == 0
+
     def start(self, ratio=1.0):
         self._ratio = float(ratio)
         return self
@@ -94,8 +103,8 @@ class Timer(BaseModel):
                 self.reset_and_pause()
             else:
                 self.set_and_pause()
-            if callable(self.callback):
-                callback(self)
+            if callable(self._callback):
+                self._callback(self)
         # Prepare next increment
         delta = 1.0/self.control.settings.fps
         self._next_increment = delta*self._ratio

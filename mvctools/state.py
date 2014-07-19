@@ -8,7 +8,7 @@ from mvctools.view import BaseView
 class NextStateException(Exception):
     pass
 
-class BaseState:
+class BaseState(object):
     model_class = BaseModel
     controller_class = BaseController
     view_class = BaseView

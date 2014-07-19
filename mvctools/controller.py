@@ -24,4 +24,8 @@ class BaseController:
         pass
 
     def is_quit_event(self, event):
-        return event.type == pg.QUIT
+        altf4_event = (event.type == pg.KEYDOWN and \
+                       event.key == pg.K_F4 and \
+                       event.mod == pg.KMOD_LALT)
+        pgquit_event = (event.type == pg.QUIT)
+        return altf4_event or pgquit_event

@@ -40,9 +40,18 @@ class PlayerModel(TileModel):
 
 class GoalModel(TileModel):
 
+    period = 3.0
+
     def init(self, pos, pid):
         super(GoalModel, self).init(pos)
         self.id = pid
+        self.activated = False
+        self.timer = Timer(self, stop=self.period, callback=self.callback)
+        self.timer.start()
+
+    def callback(self, timer):
+        self.activated = timer.is_set()
+        
 
 class BlackHoleModel(TileModel):
     pass
@@ -73,17 +82,24 @@ class BoardModel(BaseModel):
         self.nb_line = self.max_coordinate.x + 1
         self.nb_column = self.max_coordinate.x + 1
     
-    def register_validation(self):
+    def load_next_board(self):
         self.gamedata.board_clst.inc(1)
         isover = not self.gamedata.board_clst.cursor
-        next_state = self.state.next_state if isover else self.state.__class__
+        next_state = self.state.next_state if isover else type(self.state)
         self.control.register_next_state(next_state)
         raise NextStateException
+
+    def register_validation(self):
+        self.load_next_board()
 
     def register_pause(self):
         self.control.push_current_state()
         self.control.register_next_state(self.state.pause_state)
         raise NextStateException
+
+    def update(self):
+        if all(goal.activated for goal in self.goal_dct.values()):
+            self.load_next_board()
 
     def build_tiles(self, resource):
         mat = self.parse(resource)

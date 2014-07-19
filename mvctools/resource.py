@@ -14,19 +14,6 @@ def resource_path(relative):
 def walk(path):
     return os.walk(resource_path(path))
 
-def load_image(path):
-    return pygame.image.load(resource_path(path)).convert_alpha()
-
-def load_font(path):
-    if not pygame.font.get_init():
-        pygame.font.init()
-    return lambda size: pygame.font.Font(resource_path(path), size)
-
-def load_music(path):
-    return pygame.mixer.music.load(resource_path(path))
-
-def load_file(path):
-    return open(resource_path(path)).read().split('\n')
 
 # Handler
 
@@ -42,6 +29,13 @@ class ResourceHandler:
         self._files.sort()
 
     # User methods
+
+    def getdirnames(self):
+        return sorted(self._subdir_dict)
+
+    def getfilenames(self, filtered=True):
+        filt = lambda r, e: not filtered or not r.startswith(".")
+        return sorted(r+e for r,e in self._files if filt(r, e))
 
     def load(self, recursive=True, threaded=False, callback=None):
         iterator = self.reciterator() if recursive else iter(self)
@@ -196,6 +190,11 @@ class ResourceHandler:
 
     def __del__(self):
         self.unload()
+
+    def __str__(self):
+        return "RessourceHandler : {}".format(self._dir)
+
+    __repr__ = __str__
 
     # Loaders
 

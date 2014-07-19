@@ -1,5 +1,5 @@
 # MVC imports
-from mvctools.view import BaseView, AutoSprite
+from mvctools.view import BaseView, AutoSprite, Animation
 from mvctools.common import xytuple
 
 # Model imports
@@ -14,20 +14,18 @@ import pygame as pg
 
 class TileSprite(AutoSprite):
 
-    adjustment = 0.75
-    size_ratio = 0.08, 0.065
-    raw_ratio = 216.0/141
+    basesize_ratio = 0.08, 0.065
 
     def init(self):
-        self.basesize = (self.settings.size*self.size_ratio).map(int)
+        self.basesize = (self.settings.size*self.basesize_ratio).map(int)
         center = self.model.parent.max_coordinate * (0.5,0.5)
-        center += (self.adjustment,)*2
         shift = self.settings.size/(2,2) - self.isoconvert(center)
+        shift += (0, self.basesize.y * 0.5)
         self.shift = shift.map(int)
     
     def get_rect(self):
         pos = self.isoconvert(self.model.pos)
-        return self.image.get_rect(center=pos+self.shift)
+        return self.image.get_rect(midbottom=pos+self.shift)
 
     def get_layer(self):
         pos = self.model.pos
@@ -38,10 +36,22 @@ class TileSprite(AutoSprite):
         pos *= self.basesize * (0.5, 0.5)
         return pos.map(int)
 
-    @property
-    def size(self):
-        #ratio = float(image.get_height())/image.get_width()
-        size = self.basesize * (1, self.raw_ratio * 3**0.5)
+    def scale_resource(self, folder, name):
+        raw_image = folder.getfile(name)
+        if raw_image:
+            raw_ratio = float(raw_image.get_height()) / raw_image.get_width()
+            size = self.get_size(raw_ratio)
+        return folder.getfile(name, size)
+
+    def build_animation(self, resource, timer=None, inf=None, sup=None, looping=True):
+        if timer is None:
+            timer = self.model.lifetime
+        filenames = resource.getfilenames()
+        resource = [self.scale_resource(resource, name) for name in filenames] 
+        return Animation(resource, timer, inf, sup, looping)
+
+    def get_size(self, raw_ratio):
+        size = self.basesize * (1, raw_ratio * 3**0.5)
         return size.map(int)
 
 class FloorSprite(TileSprite):
@@ -57,8 +67,9 @@ class FloorSprite(TileSprite):
                              for key in self.color_dct}
 
     def get_resource(self, key):
-        name = "_".join(("floor", self.color_dct[key]))
-        return self.resource.image.floor.getfile(name, self.size)
+        filename = "_".join(("floor", self.color_dct[key]))
+        folder = self.resource.image.floor
+        return self.scale_resource(folder, filename)
 
     def get_image(self):
         return self.resource_dct[sum(self.model.activation_dct)]
@@ -67,7 +78,7 @@ class BlockSprite(TileSprite):
 
     def init(self):
         super(BlockSprite, self).init()
-        self.image = self.resource.image.getfile("block", self.size)
+        self.image = self.scale_resource(self.resource.image, "block")
 
 class BlackHoleSprite(TileSprite):
 
@@ -76,8 +87,7 @@ class BlackHoleSprite(TileSprite):
     def init(self):
         super(BlackHoleSprite, self).init()
         resource = self.resource.image.black_hole
-        self.animation = self.build_animation(resource, sup=self.period,
-                                              resize = self.size)
+        self.animation = self.build_animation(resource, sup=self.period)
 
     def get_image(self):
         return self.animation.get()
@@ -96,7 +106,7 @@ class PlayerSprite(TileSprite):
         super(PlayerSprite, self).init() 
         resource_dct = {direction: self.get_folder(direction)
                         for direction in self.direction_dct}   
-        self.animation_dct = {di: self.build_animation(re, sup=self.period, resize=True)
+        self.animation_dct = {di: self.build_animation(re, sup=self.period)
                               for di ,re in resource_dct.items()}   
 
     def get_folder(self, direction):
@@ -118,8 +128,8 @@ class GoalSprite(TileSprite):
 
     def init(self):
         super(GoalSprite, self).init() 
-        self.images = list(self.folder.iterator(formatting=self.size))
-        self.image = self.images[0]
+        self.animation = self.build_animation(self.folder, self.model.timer,
+                                              looping = False)
         
     @property
     def folder(self):
@@ -130,11 +140,14 @@ class GoalSprite(TileSprite):
     def get_layer(self):
         return super(GoalSprite, self).get_layer() + 0.5
 
+    def get_image(self):
+        return self.animation.get()
+
 class BorderSprite(TileSprite):
 
     def init(self):
         super(BorderSprite, self).init()
-        self.image = self.resource.image.getfile("border", self.size)
+        self.image = self.scale_resource(self.resource.image, "border")
 
 
 # View class
