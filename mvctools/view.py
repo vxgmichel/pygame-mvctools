@@ -22,6 +22,7 @@ class BaseView(object):
         self.group = AutoGroup()
         self.screen = pg.display.get_surface()
         self.background = self.get_background()
+        self.first_update = True
         # Call user initialisation
         self.init()
 
@@ -31,14 +32,13 @@ class BaseView(object):
     def get_background(self):
         return None
 
-    def check_screen(self):
-        if self.screen is not pg.display.get_surface():
-            self.__init__(self, self.model)
-        self._update(update_all=True)
+    def _reload(self):
+        self.__init__(self, self.model)
 
-    def _update(self, update_all=False):
+    def _update(self):
         # Handle parameter
-        self.group._use_update = not update_all
+        self.group._use_update = not self.first_update
+        self.first_update = False
         # Update, draw and display
         self.gen_sprites()
         self.group.update()

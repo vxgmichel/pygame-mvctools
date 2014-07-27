@@ -8,6 +8,19 @@ from mvctools.view import BaseView
 class NextStateException(Exception):
     pass
 
+class TickContext(object):
+    def __init__(self, state):
+        self.state = state
+
+    def __enter__(self):
+        self.state.ticking = True
+
+    def __exit__(self, error, value, traceback):
+        self.state.ticking = False
+        if error is NextStateException:
+            return True
+            
+
 class BaseState(object):
     model_class = BaseModel
     controller_class = BaseController
@@ -19,13 +32,18 @@ class BaseState(object):
         self.model = self.model_class(self)
         self.controller = self.controller_class(self, self.model)
         self.view = self.view_class(self, self.model)
+        self.ticking = False
 
     def tick(self):
         mvc = self.controller, self.model, self.view
-        try:
+        with TickContext(self):
             return any(entity._update() for entity in mvc)
-        except NextStateException:
-            return True
+        return True
+
+    def reload(self):
+        self.controller._reload()
+        self.model._reload()
+        self.view._reload()
 
     def run(self):
         # Display fps
@@ -33,7 +51,6 @@ class BaseState(object):
             string = self.control.window_title + "   FPS = {:3}"
         else:
             string = None
-        self.view.check_screen()
         clock = self.clock_class()
         while not self.tick():
             clock.tick(self.control.settings.fps)

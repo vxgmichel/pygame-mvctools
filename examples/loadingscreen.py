@@ -74,7 +74,7 @@ class LoadingLogoSprite(AutoSprite):
 
 class LoadingView(BaseView):
     sprite_class_dct = {LoadingModel: LoadingSprite}
-    bgd_color = Color("white")
+    bgd_color = Color("lightblue")
     bgd_name = "ashred"
 
     def get_background(self):

@@ -22,11 +22,18 @@ class BaseModel(object):
     def init(self, *args, **kwargs):
         self.lifetime = Timer(self).start()
 
+    def _reload(self):
+        self.reload()
+        [child._reload() for child in self.children.values()]
+
+    def reload(self):
+        pass
+
     def register_child(self, child):
         self.children[child.key] = child
         
     def update_children(self):
-        [obj._update() for obj in self.children.values()]
+        [child._update() for child in self.children.values()]
 
     def _update(self):
         return self.update() or self.update_children()

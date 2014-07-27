@@ -9,6 +9,9 @@ class BaseController:
 
     def init(self):
         pass
+
+    def _reload(self):
+        pass
     
     def _update(self):
         for ev in pg.event.get():

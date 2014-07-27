@@ -2,8 +2,9 @@ from mvctools.state import BaseState, NextStateException
 from mvctools.model import BaseModel
 from mvctools.controller import BaseController
 from mvctools.view import BaseView, AutoSprite
-from mvctools.common import cursoredlist
+from mvctools.common import cursoredlist, xytuple
 
+import operator
 from collections import OrderedDict
 
 from pygame import Color, Rect
@@ -13,16 +14,17 @@ import pygame as pg
 
 class MenuController(BaseController):
 
+    def init(self):
+        self.key_dct = {pg.K_SPACE: self.model.register_validation,
+                        pg.K_RETURN: self.model.register_validation,
+                        pg.K_UP: self.model.register_up,
+                        pg.K_DOWN: self.model.register_down,
+                        pg.K_LEFT: self.model.register_up,
+                        pg.K_RIGHT: self.model.register_down,}
+
     def handle_event(self, event):
-        if event.type == pg.KEYDOWN and \
-           event.key in [pg.K_SPACE, pg.K_RETURN]:
-            self.model.register_validation()
-        if event.type == pg.KEYDOWN and \
-           event.key in [pg.K_UP, pg.K_LEFT]:
-            self.model.register_up()
-        if event.type == pg.KEYDOWN and \
-           event.key in [pg.K_DOWN, pg.K_RIGHT]:
-            self.model.register_down()
+        if event.type == pg.KEYDOWN and event.key in self.key_dct:
+            self.key_dct[event.key]()
         
 
 # Model
@@ -32,16 +34,18 @@ class MenuModel(BaseModel):
     title = "Example v1.0"
 
     def init(self):
+        # Background Model
+        self.background = BackgroundModel(self)
+        # Entry models
         iterator = enumerate(self.state.state_dct.iteritems())
         self.entry_dct = [EntryModel(self, i, entry, state)
                           for i, (entry, state) in iterator]
+        # Cursor
         self.cursor = cursoredlist(self.entry_dct)
         self.cursor.get().selected = True
         
     def register_validation(self):
-        state = self.cursor.get().state
-        self.control.register_next_state(state)
-        raise NextStateException
+        self.cursor.get().register_validation()
 
     def register_up(self):
         self.cursor.get().selected = False
@@ -50,6 +54,43 @@ class MenuModel(BaseModel):
     def register_down(self):
         self.cursor.get().selected = False
         self.cursor.inc(1).selected = True
+
+class BackgroundModel(BaseModel):
+
+    size_ratio = 4, 4
+    speed_ratio = 0.001, 0.002
+    background = "box_stripes_grey"
+
+    def init(self):
+        self.low = xytuple(0,0).map(float)
+        self.high = xytuple(*self.size_ratio).map(float) - (1,1)
+        self.step = -xytuple(*self.speed_ratio)
+
+    @property
+    def pos(self):
+        try:
+            return self.gamedata.background_pos
+        except AttributeError:
+            pos = (self.high-self.low)*(0.5, 0.5)
+            self.gamedata.background_pos = pos
+            return pos
+
+    @pos.setter
+    def pos(self, value):
+        self.gamedata.background_pos = xytuple(*value)   
+
+    def is_valid_pos(self, pos):
+        return all(map(operator.le, self.low, pos) + \
+                   map(operator.le, pos, self.high))
+
+    def update(self):
+        for i in (1,-1):
+            for j in (1,-1):
+                new_pos = self.pos + self.step * (i,j)
+                if self.is_valid_pos(new_pos):
+                    self.pos = new_pos
+                    self.step *= (i,j)
+                    return
                               
 
 class EntryModel(BaseModel):
@@ -59,17 +100,27 @@ class EntryModel(BaseModel):
         self.pos = pos
         self.selected = False
         self.state = state
+
+    def register_validation(self):
+        self.control.register_next_state(self.state)
+        raise NextStateException
+
+    def register_left(self):
+        pass
+
+    def register_right(self):
+        pass
     
 
 # Sprite classes
 
 class EntrySprite(AutoSprite):
     
-    font_ratios = {False: 0.065,
-                   True: 0.13,}
+    font_ratios = {False: 0.07,
+                   True: 0.1,}
     font_name = "visitor2"
     font_color = Color("black")
-    first_entry_position_ratio = (0.4, 0.6)
+    first_entry_position_ratio = (0.2, 0.6)
     relative_position_ratio = (0.1, 0.07)
     
     def init(self):
@@ -84,10 +135,10 @@ class EntrySprite(AutoSprite):
         return self.images[self.model.selected]
 
     def get_rect(self):
-        return self.image.get_rect(center=self.center)
+        return self.image.get_rect(midleft=self.midleft)
 
     @property
-    def center(self):
+    def midleft(self):
         first = (self.settings.size * self.first_entry_position_ratio)
         shift =  (self.settings.size * self.relative_position_ratio)
         return (first + shift * ((self.model.pos,)*2)).map(int)
@@ -123,30 +174,27 @@ class TitleSprite(AutoSprite):
 
 class BackgroundSprite(AutoSprite):
 
-    size_ratio = 4, 4
-    speed_ratio = 0.001, 0.002
     background = "box_stripes_grey"
 
     def init(self):
-        self.title = TitleSprite(self)
-        self.image = self.resource.image.getfile(self.background, self.size)
-        self.screen_rect = Rect((0,0), self.settings.size)
-        self.rect = self.image.get_rect(center=self.screen_rect.center)
-        self.step = self.settings.size*self.speed_ratio
+        self.size_ratio = self.model.size_ratio
+        self.image = self.resource.image.getfile(self.background, self.size).copy()
 
     def get_rect(self):
-        factors = ((1,1), (-1,1), (1,-1), (-1,-1))
-        for factor in factors:
-            rect = self.rect.move(self.step*factor)
-            if rect.contains(self.screen_rect):
-                self.step *= factor
-                return rect
+        topleft = -self.model.pos*self.settings.size
+        return self.image.get_rect(topleft=topleft)
 
 # View class
 
 class MenuView(BaseView):
+    
+    bgd_color = Color("lightblue")
     sprite_class_dct = {EntryModel: EntrySprite,
-                        MenuModel: BackgroundSprite}
+                        MenuModel: TitleSprite,
+                        BackgroundModel: BackgroundSprite}
+
+    def get_background(self):
+        return self.settings.scale_as_background(color=self.bgd_color)
 
 # Loading state              
 

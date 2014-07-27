@@ -4,7 +4,7 @@
 # Imports
 import pygame, sys
 from mvctools.gamedata import BaseGamedata
-from mvctools.state import BaseState
+from mvctools.state import BaseState, NextStateException
 from mvctools.settings import BaseSettings
 from mvctools.resource import ResourceHandler
 
@@ -71,7 +71,7 @@ class BaseControl:
     def __init__(self):
         """Initialize the state control."""
         self.next_state = self.first_state
-        self.settings = self.settings_class()
+        self.settings = self.settings_class(self)
         self.gamedata = self.gamedata_class()
         self.resource = ResourceHandler(self.resource_dict)
         self.current_state = None
@@ -90,14 +90,26 @@ class BaseControl:
             self.next_state = None
         elif self.state_stack:
             self.current_state = self.pop_state()
+            self.reload()
         else:
             self.current_state = None
         return self.current_state
+
+    def reload(self):
+        """Reload current state."""
+        if self.current_state:
+            self.current_state.reload()
+
+    def full_reload(self):
+        """Fully reload current state if it's ticking."""
+        if self.current_state and self.current_state.ticking:
+            self.push_current_state()
+            raise NextStateException
         
     def run(self):
         """Run the game."""
         # Prepare the run
-        pygame.display.set_mode(self.settings.size)
+        self.settings.set_mode()
         self.pre_run()
         # Loop over the states
         while self.load_next_state():

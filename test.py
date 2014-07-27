@@ -7,6 +7,7 @@ from examples.loadingscreen import LoadingState
 from examples.menuscreen import MenuState
 from examples.isometricboard import BoardState
 from examples.pausescreen import PauseState
+from examples.settingscreen import SettingState
 
 # Create the main control
 class Example(BaseControl):
@@ -22,11 +23,17 @@ class Example(BaseControl):
         
 # Set the links between the different states        
 Example.first_state = LoadingState
+
 LoadingState.next_state = MenuState
+
 MenuState.state_dct["Play"] = BoardState
-MenuState.state_dct["Settings"] = MenuState
+MenuState.state_dct["Settings"] = SettingState
 MenuState.state_dct["Credits"] = MenuState
 MenuState.state_dct["Quit"] = None
+
+
+SettingState.state_dct["Back"] = MenuState
+
 BoardState.next_state = MenuState
 BoardState.pause_state = PauseState
 

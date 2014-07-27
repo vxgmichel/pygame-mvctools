@@ -10,7 +10,6 @@ from functools import partial
 class TileModel(BaseModel):
     
     def init(self, pos):
-        super(TileModel, self).init()
         self._pos = pos
 
     @property
@@ -32,8 +31,12 @@ class FloorModel(TileModel):
 
 class PlayerModel(TileModel):
 
+    period = 1.5
+
     def init(self, pos, pid):
         super(PlayerModel, self).init(pos)
+        self.timer = Timer(self, stop=self.period, periodic=True)
+        self.timer.start()
         self.id = pid
         self.dir = xytuple(0,1)
         self.activedir = False
@@ -54,7 +57,13 @@ class GoalModel(TileModel):
         
 
 class BlackHoleModel(TileModel):
-    pass
+
+    period = 2.0
+
+    def init(self, pos):
+        super(BlackHoleModel, self).init(pos)
+        self.timer = Timer(self, stop=self.period, periodic=True)
+        self.timer.start()
 
 class BorderModel(TileModel):
     pass

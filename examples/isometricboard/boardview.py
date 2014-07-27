@@ -82,19 +82,17 @@ class BlockSprite(TileSprite):
 
 class BlackHoleSprite(TileSprite):
 
-    period = 1.5
-
     def init(self):
         super(BlackHoleSprite, self).init()
         resource = self.resource.image.black_hole
-        self.animation = self.build_animation(resource, sup=self.period)
+        timer = self.model.timer
+        self.animation = self.build_animation(resource, timer)
 
     def get_image(self):
         return self.animation.get()
 
 class PlayerSprite(TileSprite):
 
-    period = 1.5
     color_dct = {1 : "red",
                  2 : "green",}
     direction_dct = {(1, 0) : "sw",
@@ -103,10 +101,11 @@ class PlayerSprite(TileSprite):
                      (0,-1) : "ne",}
 
     def init(self):
-        super(PlayerSprite, self).init() 
+        super(PlayerSprite, self).init()
+        timer = self.model.timer
         resource_dct = {direction: self.get_folder(direction)
                         for direction in self.direction_dct}   
-        self.animation_dct = {di: self.build_animation(re, sup=self.period)
+        self.animation_dct = {di: self.build_animation(re, timer)
                               for di ,re in resource_dct.items()}   
 
     def get_folder(self, direction):

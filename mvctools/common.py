@@ -36,6 +36,9 @@ class xytuple(namedtuple("xytuple",("x","y"))):
     __div__ = __idiv__ = lambda self, it: xytuple(*map(operator.div, self, it))
     __div__.__doc__ = """Divide by a 2-elements iterable and return an xytuple.
                       """
+    __neg__ = lambda self: self * (-1,-1)
+    __neg__.__doc__ = """Return the additive inverse of an xytuple.
+                      """
     __abs__ = lambda self: abs(complex(*self))
     __abs__.__doc__ = """Return a float, the norm of the coordinates.
                       """
@@ -59,11 +62,15 @@ class cursoredlist(list):
         list.__init__(self, iterator)
         self.cursor = cursor
 
-    def get(self):
+    def get(self, default=None):
         """Get the current object."""
-        self.cursor %= len(self)
-        return self[self.cursor%len(self)]
-
+        if len(self):
+            self.cursor %= len(self)
+        try:
+            return self[self.cursor]
+        except IndexError:
+            return default
+        
     def inc(self, inc):
         """Increment the cursor and return the new current object.
 
