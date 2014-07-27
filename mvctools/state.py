@@ -32,6 +32,7 @@ class BaseState(object):
         self.model = self.model_class(self)
         self.controller = self.controller_class(self, self.model)
         self.view = self.view_class(self, self.model)
+        self.current_fps = self.control.settings.fps
         self.ticking = False
 
     def tick(self):
@@ -46,6 +47,7 @@ class BaseState(object):
         self.view._reload()
 
     def run(self):
+        self.current_fps = self.control.settings.fps
         # Display fps
         if self.control.display_fps:
             string = self.control.window_title + "   FPS = {:3}"
@@ -54,10 +56,12 @@ class BaseState(object):
         clock = self.clock_class()
         while not self.tick():
             clock.tick(self.control.settings.fps)
-            rate = int(clock.get_fps())
-            if string and rate:
-                caption = string.format(rate)
-                pygame.display.set_caption(caption)
+            rate = clock.get_fps()
+            if rate:
+                self.current_fps = rate
+                if string:
+                    caption = string.format(int(rate))
+                    pygame.display.set_caption(caption)
             
 
         

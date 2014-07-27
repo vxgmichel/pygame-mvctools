@@ -1,4 +1,4 @@
-"""Module to run the different state examples"""
+"""Module to bind and run the different examples"""
 
 # Imports
 import pygame

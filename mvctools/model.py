@@ -113,7 +113,7 @@ class Timer(BaseModel):
             if callable(self._callback):
                 self._callback(self)
         # Prepare next increment
-        delta = 1.0/self.control.settings.fps
+        delta = 1.0/self.state.current_fps
         self._next_increment = delta*self._ratio
         
     
