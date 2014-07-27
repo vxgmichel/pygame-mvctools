@@ -6,6 +6,6 @@ MvcTools is a high-level set of Python modules designed for writing games using 
 It is written on top of Pygame. 
 This allows you to easily design a game as a succession of states.
 Each of these states owns its own model, view and controller for which base classes are provided. 
-Other high level features are available, like the resource handler and automatically updated sprite.
+Other high level features are available, like resource handling and automatically updated sprites.
 
 Still in development
