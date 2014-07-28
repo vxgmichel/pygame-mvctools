@@ -58,7 +58,7 @@ class MenuModel(BaseModel):
 class BackgroundModel(BaseModel):
 
     size_ratio = 4, 4
-    speed_ratio = 0.001, 0.002
+    speed_ratio = 0.05, 0.1
     background = "box_stripes_grey"
 
     def init(self):
@@ -83,7 +83,9 @@ class BackgroundModel(BaseModel):
     def update(self):
         for i in (1,-1):
             for j in (1,-1):
-                new_pos = self.pos + self.step * (i,j)
+                shift = self.step * (i,j)
+                shift *= (1.0/self.state.current_fps,)*2
+                new_pos = self.pos + shift
                 if self.is_valid_pos(new_pos):
                     self.pos = new_pos
                     self.step *= (i,j)

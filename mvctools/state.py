@@ -55,11 +55,10 @@ class BaseState(object):
             string = None
         clock = self.clock_class()
         while not self.tick():
-            clock.tick(self.control.settings.fps)
+            millisec = clock.tick(self.control.settings.fps)
+            self.current_fps = 1000.0/millisec
             rate = clock.get_fps()
-            if rate:
-                self.current_fps = rate
-                if string:
+            if rate and string:
                     caption = string.format(int(rate))
                     pygame.display.set_caption(caption)
             

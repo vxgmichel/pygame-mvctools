@@ -8,6 +8,7 @@ from examples.menuscreen import MenuState
 from examples.isometricboard import BoardState
 from examples.pausescreen import PauseState
 from examples.settingscreen import SettingState
+from examples.cputestscreen import CpuTestState
 
 # Create the main control
 class Example(BaseControl):
@@ -28,11 +29,13 @@ LoadingState.next_state = MenuState
 
 MenuState.state_dct["Play"] = BoardState
 MenuState.state_dct["Settings"] = SettingState
-MenuState.state_dct["Credits"] = MenuState
+MenuState.state_dct["CPUTest"] = CpuTestState
 MenuState.state_dct["Quit"] = None
 
 
 SettingState.state_dct["Back"] = MenuState
+
+CpuTestState.state_dct["Back"] = MenuState
 
 BoardState.next_state = MenuState
 BoardState.pause_state = PauseState
