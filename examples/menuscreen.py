@@ -1,5 +1,5 @@
 from mvctools.state import BaseState, NextStateException
-from mvctools.model import BaseModel
+from mvctools.model import BaseModel, property_from_gamedata
 from mvctools.controller import BaseController
 from mvctools.view import BaseView, AutoSprite
 from mvctools.common import cursoredlist, xytuple
@@ -64,20 +64,17 @@ class BackgroundModel(BaseModel):
     def init(self):
         self.low = xytuple(0,0).map(float)
         self.high = xytuple(*self.size_ratio).map(float) - (1,1)
-        self.step = -xytuple(*self.speed_ratio)
 
-    @property
+    @property_from_gamedata("background_pos")
     def pos(self):
-        try:
-            return self.gamedata.background_pos
-        except AttributeError:
-            pos = (self.high-self.low)*(0.5, 0.5)
-            self.gamedata.background_pos = pos
-            return pos
+        # Return default value
+        return (self.high-self.low)*(0.5, 0.5)
 
-    @pos.setter
-    def pos(self, value):
-        self.gamedata.background_pos = xytuple(*value)   
+
+    @property_from_gamedata("background_step")
+    def step(self):
+        # Return default value
+        return -xytuple(*self.speed_ratio)
 
     def is_valid_pos(self, pos):
         return all(map(operator.le, self.low, pos) + \

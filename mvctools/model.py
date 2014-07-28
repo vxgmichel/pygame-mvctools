@@ -115,5 +115,27 @@ class Timer(BaseModel):
         # Prepare next increment
         delta = 1.0/self.state.current_fps
         self._next_increment = delta*self._ratio
+
+def property_from_gamedata(name):
+    def wrapper(method):
+        # Setter
+        def fset(self, value):
+            setattr(self.gamedata, name, value)
+        # Getter
+        def fget(self):
+            try:
+                return getattr(self.gamedata, name)
+            except AttributeError:
+                value = method(self)
+                fset(self, value)
+                return value
+        # Deletter
+        def fdel(self):
+            delattr(self.gamedata, name)
+        doc = method.__doc__
+        return property(fget, fset, fdel, doc)
+    return wrapper
+                
+        
         
     
