@@ -21,8 +21,8 @@ class Example(BaseControl):
         """Hide the mouse"""
         pygame.mouse.set_visible(False)
 
-        
-# Set the links between the different states        
+
+# Set the links between the different states
 Example.first_state = LoadingState
 
 LoadingState.next_state = MenuState
@@ -40,7 +40,9 @@ CpuTestState.state_dct["Back"] = MenuState
 BoardState.next_state = MenuState
 BoardState.pause_state = PauseState
 
-# Run the example  
+# Run the example
 if __name__ == "__main__":
     example = Example()
+    example.settings.fps = 1000
     example.run()
+

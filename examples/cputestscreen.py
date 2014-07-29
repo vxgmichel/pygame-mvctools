@@ -9,6 +9,7 @@ from examples.menuscreen import MenuController, MenuView, MenuModel, \
                                 TitleSprite
 from examples.settingscreen import SettingController, SettingModel, ChoiceModel, \
                                    SettingView
+from examples.common import RendererSprite
 
 import operator
 from collections import OrderedDict, defaultdict
@@ -82,46 +83,51 @@ class ChoiceSprite(EntrySprite):
         value = self.model.cursor.get()
         return self.images[value][self.model.selected]
 
-class TimerSprite(AutoSprite):
+class TimerSprite(RendererSprite):
     
-    font_ratio = 0.05
+    font_ratio = 0.1
     font_name = "visitor2"
     font_color = Color("black")
-    position_ratio = (0.9, 0.9)
+    position_ratio = (0.7, 0.9)
+    native_ratio = 4/3.0
   
     def init(self):
-        self.renderer = self.build_renderer(self.font_size)
-        
-    def get_image(self):
+        self.renderer = self.build_renderer()
+        self.digits = [DigitSprite(self, self.midleft)]
+        for x in range(4):
+            midleft = self.digits[x].rect.midright
+            self.digits.append(DigitSprite(self, midleft))
+
+    @property
+    def midleft(self):
+        return (self.settings.size * self.position_ratio).map(int)
+
+    def update(self):
         time = self.model.get()
-        text = "{:05.2f}".format(time)
-        text = text.replace("1","I")
-        return self.renderer(text)
+        text = "{:05.2f}".format(time).replace(".",":")
+        for digits, value in zip(self.digits, text):
+            digits.value = value
+
+class DigitSprite(AutoSprite):
+  
+    def init(self, midleft, value="0"):
+        self.value = value
+        self.rect = self.get_image().get_rect(midleft=midleft)
 
     def get_rect(self):
         return self.image.get_rect(center=self.center)
-
-    @property
-    def font_size(self):
-        return int(self.settings.width * self.font_ratio)
-
-    @property
-    def center(self):
-        return (self.settings.size * self.position_ratio).map(int)
-
-    def build_renderer(self, size):
-        font = self.resource.font.getfile(self.font_name, size)
-        return lambda text: font.render(text, False, self.font_color)
+        
+    def get_image(self):
+        return self.parent.renderer(self.value)
 
 
 # View class
 
 class CpuTestView(SettingView):
     pass
-
-SettingView.sprite_class_dct[ChoiceLoadModel] = ChoiceSprite
-SettingView.sprite_class_dct[CpuTestModel] = TitleSprite
-SettingView.sprite_class_dct[DisplayedTimer] = TimerSprite
+CpuTestView.register_sprite_class(ChoiceLoadModel, ChoiceSprite)
+CpuTestView.register_sprite_class(CpuTestModel, TitleSprite)
+CpuTestView.register_sprite_class(DisplayedTimer, TimerSprite)
                         
 
 # Loading state              

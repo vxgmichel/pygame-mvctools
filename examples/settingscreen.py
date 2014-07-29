@@ -33,7 +33,7 @@ class SettingModel(MenuModel):
     title = "Settings"
 
     setting_dct = OrderedDict()
-    setting_dct["SIZE"] = ('800x600', '1024x720')
+    setting_dct["SIZE"] = ('800x600', '1024x768', "1280x720")
     setting_dct["MODE"] = ('WINDOWED', 'FULL')
     setting_dct["FPS"] = ('40', '60')
 

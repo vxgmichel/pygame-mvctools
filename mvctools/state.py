@@ -53,7 +53,16 @@ class BaseState(object):
             string = self.control.window_title + "   FPS = {:3}"
         else:
             string = None
+        # Freeze current fps for the first tick
         clock = self.clock_class()
+        self.tick()
+        # PROFILE
+##        import cProfile, pstats, StringIO
+##        pr = cProfile.Profile()
+##        pr.enable()
+        # END PROFILE
+        clock.tick()
+        # Loop over the state ticks
         while not self.tick():
             millisec = clock.tick(self.control.settings.fps)
             self.current_fps = 1000.0/millisec
@@ -61,6 +70,12 @@ class BaseState(object):
             if rate and string:
                     caption = string.format(int(rate))
                     pygame.display.set_caption(caption)
-            
-
+        # PROFILE
+##        pr.disable()
+##        s = StringIO.StringIO()
+##        sortby = 'tottime'
+##        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+##        ps.print_stats()
+##        print s.getvalue()
+        # END PROFILE        
         

@@ -15,6 +15,7 @@ import pygame as pg
 class TileSprite(AutoSprite):
 
     basesize_ratio = 0.08, 0.065
+    fixed = True
 
     def init(self):
         self.basesize = (self.settings.size*self.basesize_ratio).map(int)
@@ -22,12 +23,15 @@ class TileSprite(AutoSprite):
         shift = self.settings.size/(2,2) - self.isoconvert(center)
         shift += (0, self.basesize.y * 0.5)
         self.shift = shift.map(int)
+        self.layer = self.compute_layer()
     
     def get_rect(self):
-        pos = self.isoconvert(self.model.pos)
-        return self.image.get_rect(midbottom=pos+self.shift)
+        if not self.fixed or not self.rect: 
+            pos = self.isoconvert(self.model.pos)
+            return self.image.get_rect(midbottom=pos+self.shift)
+        return self.rect
 
-    def get_layer(self):
+    def compute_layer(self):
         pos = self.model.pos
         return pos.x * self.model.parent.nb_column + pos.y
 
@@ -93,6 +97,7 @@ class BlackHoleSprite(TileSprite):
 
 class PlayerSprite(TileSprite):
 
+    fixed = False
     color_dct = {1 : "red",
                  2 : "green",}
     direction_dct = {(1, 0) : "sw",
@@ -117,7 +122,7 @@ class PlayerSprite(TileSprite):
         return self.animation_dct[self.model.dir].get()
 
     def get_layer(self):
-        return super(PlayerSprite, self).get_layer() + 0.5
+        return self.compute_layer() + 0.5
 
 class GoalSprite(TileSprite):
 
@@ -126,7 +131,8 @@ class GoalSprite(TileSprite):
                  2 : "green",}
 
     def init(self):
-        super(GoalSprite, self).init() 
+        super(GoalSprite, self).init()
+        self.layer += 0.5
         self.animation = self.build_animation(self.folder, self.model.timer,
                                               looping = False)
         
@@ -135,9 +141,6 @@ class GoalSprite(TileSprite):
         color = self.color_dct[self.model.id]
         name = "_".join(("goal", color))
         return getattr(self.resource.image, name)
-
-    def get_layer(self):
-        return super(GoalSprite, self).get_layer() + 0.5
 
     def get_image(self):
         return self.animation.get()

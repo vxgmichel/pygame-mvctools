@@ -50,29 +50,33 @@ class BaseView(object):
             if key not in self.sprite_dct:
                 cls = self.get_sprite_class(obj)
                 if cls:
-                    self.sprite_dct[key] = cls(self, obj)
+                    self.sprite_dct[key] = cls(self, model=obj)
 
     def get_sprite_class(self, obj):
         return self.sprite_class_dct.get(obj.__class__, None)
 
     @classmethod
     def register_sprite_class(cls, obj_cls, sprite_cls):
-        cls.sprite_class_dct[obj_cls, sprite_cls]
+        cls.sprite_class_dct[obj_cls] = sprite_cls
         
 
 class AutoSprite(DirtySprite):
 
     size_ratio = None
 
-    def __init__(self, parent, model=None):
+    def __init__(self, parent, *args, **kwargs):
         super(AutoSprite, self).__init__()
+        # Model default kwarg
+        model = kwargs.pop("model", None)
         # Internal variables
         self._image = Surface((0,0))
-        self._rect = AutoRect(self.image.get_rect())
+        self._rect = Autorect(self.image.get_rect())
+        self._layer = 0
         # Parent handling
         self.parent = parent
         if isinstance(parent, AutoSprite):
             parent.register_child(self)
+            self._layer = parent.layer
         # Group handling
         self.group = parent.group
         self.group.add(self)
@@ -85,9 +89,9 @@ class AutoSprite(DirtySprite):
         # Children
         self.children = []
         # Init
-        self.init()
+        self.init(*args, **kwargs)
 
-    def init(self):
+    def init(self, *args, **kwargs):
         pass
 
     def update(self):
@@ -102,6 +106,20 @@ class AutoSprite(DirtySprite):
     def register_child(self, child):
         self.children.append(child)
 
+    # Access autorect properties
+
+    def __getattr__(self, name):
+        if hasattr(Autorect, name) and \
+           isinstance(getattr(Autorect, name), property):
+            return getattr(self.rect, name)
+        return super(AutoSprite, self).__getattr__(name)
+
+##    def __setattr__(self, name, value):
+##        if hasattr(Autorect, name) and \
+##           isinstance(getattr(Autorect, name), property):
+##            return setattr(self.rect, name, value)
+##        return super(AutoSprite, self).__setattr__(name, value)
+
     # Method to override
 
     def get_rect(self):
@@ -111,7 +129,7 @@ class AutoSprite(DirtySprite):
         return self.image
 
     def get_layer(self):
-        return 0
+        return self.layer
 
     # Dirty flagging
 
@@ -178,11 +196,15 @@ class AutoSprite(DirtySprite):
 
     @rect.setter
     def rect(self, rect):
+        is_autorect = isinstance(rect, Autorect)
         if rect != self._rect:
             self.set_dirty()
-        if isinstance(rect, AutoRect) and rect is not self._rect:
+            if not is_autorect:
+                self._rect.size = rect.size
+                self._rect.topleft = rect.topleft
+        if is_autorect and rect is not self._rect:
             rect.register(self)
-        self._rect = rect
+            self._rect = rect
 
     @rect.deleter
     def rect(self):
@@ -231,10 +253,10 @@ class UpgradingMetaClass(type):
         return cls
         
     
-class AutoRect(Rect):
+class Autorect(Rect):
 
     def __init__(self, *args, **kwargs):
-        super(AutoRect, self).__init__(*args, **kwargs)
+        super(Autorect, self).__init__(*args, **kwargs)
         self.sprites = []
 
     def notify(self):
@@ -255,6 +277,8 @@ class AutoRect(Rect):
 
     @staticmethod
     def upgrade_method(method):
+        if not method.__name__.endswith('_ip'):
+            return method
         def wrapper(self, *args, **kwargs):
             temp = Rect.copy(self)
             res = method(self, *args, **kwargs)
