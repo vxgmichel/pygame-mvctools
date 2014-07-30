@@ -113,10 +113,13 @@ class ResourceHandler:
             return self._subdir_dict[name]
         return default
 
-    def unloadfile(self, name):
+    def unloadfile(self, name, formatting=None):
         # Look for an already loaded resource
         if attr in self._resource_dict:
-            del(self._resource_dict[name])
+            if formatting is None:
+                del(self._resource_dict[name])
+            else:
+                del(self._resource_dict[name][formatting])
         # Look for valid filenames
         valid_files = (r+e for r, e in self._files if name==r)
         return next(valid_files, None)
@@ -184,6 +187,25 @@ class ResourceHandler:
         # Raise AttributeError
         msg = "Ressource '{}*' cannot be found".format(self._join(attr))
         raise AttributeError(msg)
+
+    def __len__(self):
+        return len(self._files)
+
+    def __getitem__(self, index):
+        formatting = None
+        if isinstance(index, tuple):
+            index = index[0]
+            formatting = index[1]
+        root, ext = self._files[index]
+        return self.get_file(root+ext, formatting)
+
+    def __detitem__(self, index):
+        formatting = None
+        if isinstance(index, tuple):
+            index = index[0]
+            formatting = index[1]
+        root, ext = self._files[index]
+        return self.self.unloadfile(root+ext)
 
     def __iter__(self):
         return self.iterator()

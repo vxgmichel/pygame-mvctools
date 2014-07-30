@@ -43,6 +43,5 @@ BoardState.pause_state = PauseState
 # Run the example
 if __name__ == "__main__":
     example = Example()
-    example.settings.fps = 1000
     example.run()
 

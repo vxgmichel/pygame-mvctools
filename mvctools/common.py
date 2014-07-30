@@ -1,7 +1,7 @@
 """Module with useful classes and functions."""
 
 import operator
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 
 class xytuple(namedtuple("xytuple",("x","y"))):
@@ -88,3 +88,14 @@ class cursoredlist(list):
         """
         self.cursor -= dec
         return self.get()
+
+
+class cachedict(defaultdict):
+
+    def __missing__(self, key):
+        if isinstance(key, tuple):
+            self[key] = self.default_factory(*key)
+        else:
+            self[key] = self.default_factory(index)
+        return self[key]
+        

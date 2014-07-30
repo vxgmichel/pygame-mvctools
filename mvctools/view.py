@@ -2,7 +2,7 @@ import pygame as pg
 from pygame.sprite import LayeredDirty, DirtySprite
 from pygame import Rect, Surface, transform
 from functools import partial
-from mvctools.common import xytuple
+from mvctools.common import xytuple, cachedict
 
 AutoGroup = partial(LayeredDirty, _use_updates = True, _time_threshold = 1000)
 
@@ -215,28 +215,42 @@ class Animation(object):
 
     def __init__(self, resource, timer,
                  inf=None, sup=None, looping=True, size=None):
-        if isinstance(resource, list):
-            no_scale = lambda image, arg: image
-            scale = no_scale if size is None else pg.transform.smoothscale
-            self.images = [scale(image, size) for image in resource]
-        else:
-            self.images = list(resource.iterator(size))
+        # Set attributes
+        self.resource = resource
+        self.size = size
         self.timer = timer
         start, stop = timer.get_interval()
         self.inf = start if inf is None else inf
         self.sup = stop if sup is None else sup
         self.looping = looping
+        # Set cache
+        if isinstance(resource, list):
+            self.cache = cachedict(self.scale_image)
+        else:
+            self.cache = self.resource
+
+    def scale_image(self, index, size):
+        raw = self.resource[index]
+        if not size or size == raw.get_size():
+            return raw
+        return transform.smoothscale(raw, size)
 
     def get(self):
         normalized = (self.timer.get() - self.inf) / (self.sup - self.inf)
-        index = int(normalized * len(self.images))
+        index = int(normalized * len(self))
         if self.looping:
-            index %= len(self.images)
+            index %= len(self)
         elif normalized >= 1:
             index = -1
         elif normalized <= 0:
             index = 0
-        return self.images[index]
+        return self[index]
+
+    def __len__(self):
+        return len(self.resource)
+
+    def __getitem__(self, index):
+        return self.cache[index, self.size]
 
 
 
