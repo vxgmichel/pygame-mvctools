@@ -1,7 +1,4 @@
-from mvctools.state import BaseState
-from mvctools.model import BaseModel
-from mvctools.controller import BaseController
-from mvctools.view import BaseView, AutoSprite
+from mvctools import BaseState, BaseModel, BaseController, BaseView, AutoSprite
 from pygame import Color
 
 from menuscreen import MenuState

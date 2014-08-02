@@ -1,7 +1,6 @@
-from mvctools.state import BaseState, NextStateException
-from mvctools.model import BaseModel
-from mvctools.controller import BaseController
-from mvctools.view import BaseView, AutoSprite
+from mvctools import BaseState, BaseModel, BaseController, BaseView
+from mvctools import AutoSprite, NextStateException
+
 
 from pygame import Color, Rect, Surface
 import pygame as pg

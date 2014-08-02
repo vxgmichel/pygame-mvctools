@@ -1,4 +1,4 @@
-from mvctools.controller import BaseController
+from mvctools import BaseController
 import pygame as pg
 
 # Controller

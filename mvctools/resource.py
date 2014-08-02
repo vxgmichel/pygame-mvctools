@@ -21,7 +21,9 @@ class ResourceHandler:
     
     def __init__(self, directory):
         self._dir, self._subdirs, self._files = next(walk(directory))
-        self._files = [os.path.splitext(f) for f in self._files]
+        self._files = [os.path.splitext(f)
+                           for f in self._files
+                               if not f.startswith(".")]
         self._subdir_dict = {subdir: ResourceHandler(self._join(subdir))
                              for subdir in self._subdirs}
         self._resource_dict = defaultdict(dict)
@@ -34,8 +36,7 @@ class ResourceHandler:
         return sorted(self._subdir_dict)
 
     def getfilenames(self, filtered=True):
-        filt = lambda r, e: not filtered or not r.startswith(".")
-        return sorted(r+e for r,e in self._files if filt(r, e))
+        return sorted(r+e for r,e in self._files)
 
     def load(self, recursive=True, threaded=False, callback=None):
         iterator = self.reciterator() if recursive else iter(self)
@@ -194,16 +195,14 @@ class ResourceHandler:
     def __getitem__(self, index):
         formatting = None
         if isinstance(index, tuple):
-            index = index[0]
-            formatting = index[1]
+            index, formatting = index
         root, ext = self._files[index]
-        return self.get_file(root+ext, formatting)
+        return self.getfile(root+ext, formatting)
 
     def __detitem__(self, index):
         formatting = None
         if isinstance(index, tuple):
-            index = index[0]
-            formatting = index[1]
+            index, formatting = index
         root, ext = self._files[index]
         return self.self.unloadfile(root+ext)
 

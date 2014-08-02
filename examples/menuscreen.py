@@ -1,8 +1,6 @@
-from mvctools.state import BaseState, NextStateException
-from mvctools.model import BaseModel, property_from_gamedata
-from mvctools.controller import BaseController
-from mvctools.view import BaseView, AutoSprite
-from mvctools.common import cursoredlist, xytuple
+from mvctools import BaseState, BaseModel, BaseController, BaseView
+from mvctools import AutoSprite, NextStateException
+from mvctools import property_from_gamedata, cursoredlist, xytuple
 
 import operator
 from collections import OrderedDict

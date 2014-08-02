@@ -1,6 +1,5 @@
 # MVC imports
-from mvctools.view import BaseView, AutoSprite, Animation
-from mvctools.common import xytuple
+from mvctools import BaseView, AutoSprite, Animation, xytuple
 
 # Model imports
 from boardmodel import BlockModel, FloorModel, BlackHoleModel, \
@@ -24,6 +23,7 @@ class TileSprite(AutoSprite):
         shift += (0, self.basesize.y * 0.5)
         self.shift = shift.map(int)
         self.layer = self.compute_layer()
+        self.raw_ratio = None
     
     def get_rect(self):
         if not self.fixed or not self.rect: 
@@ -40,23 +40,28 @@ class TileSprite(AutoSprite):
         pos *= self.basesize * (0.5, 0.5)
         return pos.map(int)
 
-    def scale_resource(self, folder, name):
-        raw_image = folder.getfile(name)
-        if raw_image:
-            raw_ratio = float(raw_image.get_height()) / raw_image.get_width()
-            size = self.get_size(raw_ratio)
-        return folder.getfile(name, size)
+    def build_animation(self, resource, timer=None,
+                        inf=None, sup=None, looping=True):
+        self.raw_ratio = self.get_raw_ratio(resource)
+        return super(TileSprite, self).build_animation(resource, timer, inf,
+                                                       sup, looping, True)
 
-    def build_animation(self, resource, timer=None, inf=None, sup=None, looping=True):
-        if timer is None:
-            timer = self.model.lifetime
-        filenames = resource.getfilenames()
-        resource = [self.scale_resource(resource, name) for name in filenames] 
-        return Animation(resource, timer, inf, sup, looping)
+    def scale_resource(self, resource, name):
+        self.raw_ratio = self.get_raw_ratio(resource, name)
+        return super(TileSprite, self).scale_resource(resource, name)
 
-    def get_size(self, raw_ratio):
-        size = self.basesize * (1, raw_ratio * 3**0.5)
+    @property
+    def size(self):
+        if self.rect.size != (0,0):
+            return self.rect.size
+        if self.raw_ratio is None:
+            return xytuple(0,0)
+        size = self.basesize * (1, self.raw_ratio * 3**0.5)
         return size.map(int)
+    
+    def get_raw_ratio(self, resource, name=None):
+        raw = resource.getfile(name) if name else resource[0]
+        return float(raw.get_height()) / raw.get_width()
 
 class FloorSprite(TileSprite):
 

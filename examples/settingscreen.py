@@ -1,8 +1,6 @@
-from mvctools.state import BaseState, NextStateException
-from mvctools.model import BaseModel
-from mvctools.controller import BaseController
-from mvctools.view import BaseView, AutoSprite
-from mvctools.common import cursoredlist, xytuple
+from mvctools import BaseState, BaseModel, BaseController, NextStateException
+from mvctools import NextStateException, AutoSprite, cursoredlist, xytuple
+
 
 from examples.menuscreen import MenuController, MenuView, MenuModel, \
                                 EntryModel, EntrySprite, BackgroundModel, \

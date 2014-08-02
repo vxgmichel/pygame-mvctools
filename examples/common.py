@@ -1,5 +1,4 @@
-from mvctools.model import BaseModel
-from mvctools.view import AutoSprite
+from mvctools import BaseModel, AutoSprite
 from pygame import Color, transform       
 
 def cache(func):
