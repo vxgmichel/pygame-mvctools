@@ -1,4 +1,4 @@
-from mvctools.utils.menu import BaseMenuView, BaseMenuState, BaseMenuSprite
+from mvctools.utils import BaseMenuView, BaseMenuState, BaseMenuSprite
 
 from examples.common import DisplayedTimer, TimerSprite
 from examples.common import ChoiceModel, ChoiceSprite

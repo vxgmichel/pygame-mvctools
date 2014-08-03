@@ -1,5 +1,5 @@
-from mvctools.utils.menu import BaseMenuModel, BaseMenuView, BaseEntryModel
-from mvctools.utils.menu import BaseMenuState, BaseMenuSprite, BaseEntrySprite
+from mvctools.utils import BaseMenuModel, BaseMenuView, BaseEntryModel
+from mvctools.utils import BaseMenuState, BaseMenuSprite, BaseEntrySprite
 
 from examples.common import EntryModel, EntrySprite, ChoiceModel, ChoiceSprite
 from examples.common import BackgroundModel, BackgroundSprite
@@ -11,6 +11,12 @@ from collections import OrderedDict
 
 class SettingChoiceModel(ChoiceModel):
 
+    def init(self, *args, **kwargs):
+        ChoiceModel.init(self, *args, **kwargs)
+        string  = self.control.settings.string_setting(self.text.lower())
+        try: self.cursor.set(self.cursor.index(string.lower()))
+        except: print(string)
+        
     def register_validation(self):
         attr = self.text.lower()
         setattr(self.control.settings, attr, self.current)
@@ -20,8 +26,8 @@ class SettingModel(BaseMenuModel):
     title = "Settings"
 
     setting_dct = OrderedDict()
-    setting_dct["SIZE"] = ('800x600', '1024x768', "1280x720")
-    setting_dct["MODE"] = ('WINDOWED', 'FULL')
+    setting_dct["SIZE"] = ('800x600', '1024x768', "1280x720", "1600x900")
+    setting_dct["MODE"] = ('windowed', 'fullscreen')
     setting_dct["FPS"] = ('40', '60')
 
     choice_model_class = SettingChoiceModel

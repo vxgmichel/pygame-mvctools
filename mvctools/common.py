@@ -90,6 +90,11 @@ class cursoredlist(list):
         self.cursor -= dec
         return self.get()
 
+    def set(self, index):
+        """Set the cursor to an arbitrary index value."""
+        if len(self):
+            self.cursor = index % len(self)
+
 
 class cachedict(defaultdict):
 

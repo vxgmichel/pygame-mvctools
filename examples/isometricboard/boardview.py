@@ -5,21 +5,28 @@ from mvctools import BaseView, AutoSprite, Animation, xytuple
 from boardmodel import BlockModel, FloorModel, BlackHoleModel, \
                        BorderModel, PlayerModel, GoalModel
 
+# Imports
+from math import ceil
 
 # Sprite classes
 
 class TileSprite(AutoSprite):
 
-    basesize_ratio = 0.08, 0.065
+    max_tile_x = 13
+    max_tile_y = 14
     fixed = True
 
     def init(self):
-        self.basesize = (self.settings.size*self.basesize_ratio).map(int)
+        # Base size
+        self.basesize = self.compute_basesize()
+        # Shifting
         center = self.model.parent.max_coordinate * (0.5,0.5)
         shift = self.settings.size/(2,2) - self.isoconvert(center)
         shift += (0, self.basesize.y * 0.5)
-        self.shift = shift.map(int)
+        self.shift = shift.map(round).map(int)
+        # Layer
         self.layer = self.compute_layer()
+        # Raw ratio
         self.raw_ratio = None
     
     def get_rect(self):
@@ -35,18 +42,18 @@ class TileSprite(AutoSprite):
     def isoconvert(self, pos):
         pos = xytuple(pos.y-pos.x, pos.x+pos.y)
         pos *= self.basesize * (0.5, 0.5)
-        return pos.map(int)
+        return pos.map(round).map(int)
 
     def build_animation(self, resource, timer=None,
                         inf=None, sup=None, looping=True):
-        self.raw_ratio = self.get_raw_ratio(resource)
+        self.raw_ratio = self.compute_raw_ratio(resource)
         return super(TileSprite, self).build_animation(resource, timer, inf,
                                                        sup, looping, True)
 
     def scale_resource(self, resource, name):
-        self.raw_ratio = self.get_raw_ratio(resource, name)
+        self.raw_ratio = self.compute_raw_ratio(resource, name)
         return super(TileSprite, self).scale_resource(resource, name)
-
+         
     @property
     def size(self):
         if self.rect.size != (0,0):
@@ -54,11 +61,20 @@ class TileSprite(AutoSprite):
         if self.raw_ratio is None:
             return xytuple(0,0)
         size = self.basesize * (1, self.raw_ratio * 3**0.5)
-        return size.map(int)
+        return size.map(ceil).map(int)
     
-    def get_raw_ratio(self, resource, name=None):
+    def compute_raw_ratio(self, resource, name=None):
         raw = resource.getfile(name) if name else resource[0]
         return float(raw.get_height()) / raw.get_width()
+
+    def compute_basesize(self):
+        width = float(self.settings.width)/self.max_tile_x
+        coresponding_height = width / (3**0.5)
+        height = float(self.settings.height)/self.max_tile_y
+        if height > coresponding_height:
+            return xytuple(width, coresponding_height)
+        coresponding_width = height * (3**0.5)
+        return xytuple(coresponding_width, height)
 
 class FloorSprite(TileSprite):
 

@@ -1,8 +1,8 @@
 from mvctools import BaseState, BaseModel, BaseController, BaseView
 from mvctools import AutoSprite, NextStateException
+from mvctools.utils import RendererSprite
 
-
-from pygame import Color, Rect, Surface
+from pygame import Surface
 import pygame as pg
 
 # Controller
@@ -27,41 +27,32 @@ class PauseModel(BaseModel):
 
 # Sprite classes
 
-class PauseSprite(AutoSprite):
+class PauseSprite(RendererSprite):
     
     font_ratio = 0.05
     font_name = "visitor2"
-    font_color = Color("white")
+    font_color = "white"
     position_ratio = (0.5, 0.5)
   
     def init(self):
-        self.renderer = self.build_renderer(self.font_size)
+        RendererSprite.init(self)
         self.image = self.renderer(self.model.text)
         self.rect = self.image.get_rect(center=self.center)
-
-    @property
-    def font_size(self):
-        return int(self.settings.width * self.font_ratio)
 
     @property
     def center(self):
         return (self.settings.size * self.position_ratio).map(int)
 
-    def build_renderer(self, size):
-        font = self.resource.font.getfile(self.font_name, size)
-        return lambda text: font.render(text, False, self.font_color)
-
-
 # View class
 
 class PauseView(BaseView):
+    shade_ratio = 0.5
     sprite_class_dct = {PauseModel:PauseSprite}
 
     def get_background(self):
-        previous = self.screen.copy()
-        previous.set_alpha(255/2)
-        bgd = Surface(previous.get_size())
-        bgd.blit(previous, previous.get_rect())
+        bgd = self.screen.copy()
+        color = (255*self.shade_ratio,)*3
+        bgd.fill(color, special_flags=pg.BLEND_MULT)
         return bgd
 
 # Loading state              

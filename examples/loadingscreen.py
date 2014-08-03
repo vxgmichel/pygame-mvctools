@@ -1,6 +1,6 @@
 from mvctools import BaseModel, BaseController, BaseView
 from mvctools import BaseState, AutoSprite
-from mvctools.utils.renderer import RendererSprite
+from mvctools.utils import RendererSprite
 
 # Model
 

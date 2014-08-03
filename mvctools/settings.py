@@ -5,10 +5,10 @@ class BaseSettings(object):
     def __init__(self, control):
         self.control = control
         self._fps = 40
-        self._width = 800
-        self._height = 600
+        self._width = 1280
+        self._height = 720
         self._fullscreen = False
-        self._native_ratio = 4/3.0
+        self._native_ratio = None
 
     @property
     def width(self):
@@ -60,6 +60,9 @@ class BaseSettings(object):
             self._fullscreen = value
             self.apply()
 
+    # Fullscreen alias
+    mode = fullscreen
+
     @property
     def native_ratio(self):
         return self._native_ratio
@@ -73,9 +76,18 @@ class BaseSettings(object):
             self._native_ratio = value
             self.apply()
 
-
-    # Fullscreen alias
-    mode = fullscreen
+    def string_setting(self, name, default=None):
+        if name in ["size"]:
+            return "x".join(map(str, self.size))
+        if name in ["fullscreen", "mode"]:
+            return {True: "fullscreen", False: "windowed"}.get(self.mode)
+        if name in ["fps"]:
+            return str(self.fps)
+        if name in ["width"]:
+            return str(self.width)
+        if name in ["height"]:
+            return str(self.height)
+        return default
 
     def apply(self):
         if pygame.display.get_surface():

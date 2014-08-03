@@ -1,5 +1,5 @@
-from mvctools.utils.menu import BaseMenuModel, BaseMenuView, BaseEntryModel
-from mvctools.utils.menu import BaseMenuState, BaseMenuSprite, BaseEntrySprite
+from mvctools.utils import BaseMenuModel, BaseMenuView, BaseEntryModel
+from mvctools.utils import BaseMenuState, BaseMenuSprite, BaseEntrySprite
 
 from examples.common import EntryModel, EntrySprite
 from examples.common import BackgroundModel, BackgroundSprite 
