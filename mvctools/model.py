@@ -46,6 +46,14 @@ class BaseModel(object):
         value = (self.key, self)
         return chain([value], *iterators)
 
+    def __getattr__(self, attr):
+        if not attr.startswith("register_"):
+            raise AttributeError(attr)
+        def register_func(*args, **kwargs):
+            [getattr(child, attr)(*args, **kwargs)
+                 for child in self.children.values()]
+        return register_func
+
 class Timer(BaseModel):
 
     def init(self, start=0, stop=None, periodic=False, callback=None):

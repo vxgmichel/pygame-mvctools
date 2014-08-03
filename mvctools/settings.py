@@ -1,5 +1,5 @@
 import pygame
-from mvctools.common import xytuple
+from mvctools.common import xytuple, Color
 
 class BaseSettings(object):
     def __init__(self, control):
@@ -8,6 +8,7 @@ class BaseSettings(object):
         self._width = 800
         self._height = 600
         self._fullscreen = False
+        self._native_ratio = 4/3.0
 
     @property
     def width(self):
@@ -59,6 +60,20 @@ class BaseSettings(object):
             self._fullscreen = value
             self.apply()
 
+    @property
+    def native_ratio(self):
+        return self._native_ratio
+
+    @native_ratio.setter
+    def native_ratio(self, value):
+        if isinstance(value, tuple):
+            w, h = value
+            value = float(w)/h
+        if value != self.native_ratio:
+            self._native_ratio = value
+            self.apply()
+
+
     # Fullscreen alias
     mode = fullscreen
 
@@ -72,7 +87,10 @@ class BaseSettings(object):
         pygame.display.set_mode(self.size, flag)
         
 
-    def scale_as_background(self, image=None, color=(0,0,0)):
+    def scale_as_background(self, image=None, color=None):
+        if not image and not color:
+            return None
+        color = Color(color)
         bgd = pygame.Surface(self.size)
         bgd.fill(color)
         if image is not None:

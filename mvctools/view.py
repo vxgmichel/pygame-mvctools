@@ -2,12 +2,14 @@ import pygame as pg
 from pygame.sprite import LayeredDirty, DirtySprite
 from pygame import Rect, Surface, transform
 from functools import partial
-from mvctools.common import xytuple, cachedict
+from mvctools.common import xytuple, cachedict, Color
 
 AutoGroup = partial(LayeredDirty, _use_updates = True, _time_threshold = 1000)
 
 class BaseView(object):
-
+    
+    bgd_image = None
+    bgd_color = None
     sprite_class_dct = {}
 
     def __init__(self, state, model):
@@ -30,7 +32,8 @@ class BaseView(object):
         pass
 
     def get_background(self):
-        return None
+        image = self.resource.get(self.bgd_image) if self.bgd_image else None
+        return self.settings.scale_as_background(image, self.bgd_color)
 
     def _reload(self):
         self.__init__(self, self.model)

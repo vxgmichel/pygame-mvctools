@@ -1,32 +1,21 @@
-from mvctools import BaseState, BaseModel, BaseController, NextStateException
-from mvctools import NextStateException, AutoSprite, cursoredlist, xytuple
+from mvctools.utils.menu import BaseMenuModel, BaseMenuView, BaseEntryModel
+from mvctools.utils.menu import BaseMenuState, BaseMenuSprite, BaseEntrySprite
 
+from examples.common import EntryModel, EntrySprite, ChoiceModel, ChoiceSprite
+from examples.common import BackgroundModel, BackgroundSprite
 
-from examples.menuscreen import MenuController, MenuView, MenuModel, \
-                                EntryModel, EntrySprite, BackgroundModel, \
-                                TitleSprite
-
-import operator
-from collections import OrderedDict, defaultdict
-
-from pygame import Color, Rect
-import pygame as pg
-
-# Controller
-
-class SettingController(MenuController):
-
-    def init(self):
-        self.key_dct = {pg.K_SPACE: self.model.register_validation,
-                        pg.K_RETURN: self.model.register_validation,
-                        pg.K_UP: self.model.register_up,
-                        pg.K_DOWN: self.model.register_down,
-                        pg.K_LEFT: self.model.register_left,
-                        pg.K_RIGHT: self.model.register_right,}
+from mvctools import NextStateException
+from collections import OrderedDict
 
 # Model
 
-class SettingModel(MenuModel):
+class SettingChoiceModel(ChoiceModel):
+
+    def register_validation(self):
+        attr = self.text.lower()
+        setattr(self.control.settings, attr, self.current)
+
+class SettingModel(BaseMenuModel):
 
     title = "Settings"
 
@@ -35,86 +24,53 @@ class SettingModel(MenuModel):
     setting_dct["MODE"] = ('WINDOWED', 'FULL')
     setting_dct["FPS"] = ('40', '60')
 
+    choice_model_class = SettingChoiceModel
+    entry_model_class = EntryModel
+
     def init(self):
-        self.background = BackgroundModel(self)
-        
-        iterator = enumerate(self.setting_dct.iteritems())
-        self.entries = [ChoiceModel(self, i, entry, values)
-                        for i, (entry, values) in iterator]
-        
-        iterator = enumerate(self.state.state_dct.iteritems(),
-                             len(self.entries))
-        self.entries += [EntryModel(self, i, entry, state)
-                         for i, (entry, state) in iterator]
-        
-        self.cursor = cursoredlist(self.entries)
-        self.cursor.get().selected = True
-        
-    def register_validation(self):
-        self.cursor.get().register_validation()
-
-    def register_left(self):
-        self.cursor.get().register_left()
-        
-    def register_right(self):
-        self.cursor.get().register_right()    
-                              
-
-
-class ChoiceModel(EntryModel):
+        BaseMenuModel.init(self)
+        self.bgd = BackgroundModel(self)
     
-    def init(self, pos, text, values):
-        super(ChoiceModel, self).init(pos, text, None)
-        self.cursor = cursoredlist(values)
+    @property
+    def entry_data(self):
+        # Choice model data
+        iterator = enumerate(self.setting_dct.items())
+        data = {pos: (self.choice_model_class, name, settings)
+                    for pos, (name, settings) in iterator}
+        # Entry model data
+        iterator = enumerate(self.state.state_dct.items(), len(data))
+        data.update({pos: (self.entry_model_class, name, state)
+                         for pos, (name, state) in iterator})
+        # Return data
+        return data
 
-    def apply(self):
-        attr = self.text.lower()
-        value = self.cursor.get()
-        setattr(self.control.settings, attr, value)
-
-    def register_validation(self):
-        self.apply()
-
-    def register_left(self):
-        self.cursor.inc(-1)
-
-    def register_right(self):
-        self.cursor.inc(+1)
-    
 
 # Sprite classes
 
-class ChoiceSprite(EntrySprite):
 
-    def init(self):
-        self.images = defaultdict(dict)
-        for value in self.model.cursor:
-            text = self.model.text + " : < " + value + " >"
-            for selection, ratio in self.font_ratios.items():
-                height = int(self.settings.size.y * ratio)
-                renderer = self.build_renderer(height)
-                image = renderer(text)
-                self.images[value][selection] = image
-
-    def get_image(self):
-        value = self.model.cursor.get()
-        return self.images[value][self.model.selected]
+class SettingSprite(BaseMenuSprite):
+    
+    font_ratio = 0.15
+    font_name = "visitor2"
+    font_color = "black"
+    position_ratio = (0.5, 0.3)
 
 
 # View class
 
-class SettingView(MenuView):
-    pass
-
-SettingView.sprite_class_dct[ChoiceModel] = ChoiceSprite
-SettingView.sprite_class_dct[SettingModel] = TitleSprite
+class SettingView(BaseMenuView):
+    bgd_color = "gray"
+    bgd_image = None
+    sprite_class_dct = {SettingChoiceModel: ChoiceSprite,
+                        SettingModel: SettingSprite,
+                        BackgroundModel: BackgroundSprite,
+                        EntryModel : EntrySprite}
                         
 
 # Loading state              
 
-class SettingState(BaseState):
+class SettingState(BaseMenuState):
     model_class = SettingModel
-    controller_class = SettingController
     view_class = SettingView
     state_dct = OrderedDict()
 

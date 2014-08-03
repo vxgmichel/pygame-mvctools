@@ -1,11 +1,12 @@
-from mvctools import BaseState, BaseModel, BaseController, BaseView, AutoSprite
-from pygame import Color
-
-from menuscreen import MenuState
+from mvctools import BaseModel, BaseController, BaseView
+from mvctools import BaseState, AutoSprite
+from mvctools.utils.renderer import RendererSprite
 
 # Model
 
 class LoadingModel(BaseModel):
+
+    text = "Loading"
 
     def init(self):
         super(LoadingModel, self).init()
@@ -20,34 +21,27 @@ class LoadingModel(BaseModel):
     def callback(self):
         self.done = True
 
-# Sprite classes
+# Main sprite class
 
-class LoadingSprite(AutoSprite):
+class LoadingSprite(RendererSprite):
     
     font_ratio = 0.07
     font_name = "visitor2"
-    font_text = "Loading"
-    font_color = Color("black")
+    font_color = "black"
     position_ratio = (0.85, 0.95)
     
     def init(self):
-        self.renderer = self.build_renderer()
-        self.image = self.renderer(self.font_text)
+        RendererSprite.init(self)
+        self.image = self.renderer(self.model.text)
         self.rect = self.image.get_rect(center=self.center)
         self.logo = LoadingLogoSprite(self)
-
-    @property
-    def font_size(self):
-        return int(self.settings.height * self.font_ratio)
 
     @property
     def center(self):
         return (self.settings.size * self.position_ratio).map(int)
 
-    def build_renderer(self):
-        font = self.resource.font.getfile(self.font_name, self.font_size)
-        return lambda text: font.render(text, False, self.font_color)
- 
+
+# Secondary sprite class
 
 class LoadingLogoSprite(AutoSprite):
 
@@ -55,10 +49,8 @@ class LoadingLogoSprite(AutoSprite):
     period = 2
     
     def init(self):
-        self.images = []
         self.renderer = self.parent.renderer
-        self.images = [self.renderer("."*i).convert_alpha()
-                       for i in xrange(1, self.nb_dot+1)]
+        self.images = [self.renderer("."*i) for i in xrange(1, self.nb_dot+1)]
         self.animation = self.build_animation(self.images, sup=self.period)
 
     def get_image(self):
@@ -71,12 +63,8 @@ class LoadingLogoSprite(AutoSprite):
 
 class LoadingView(BaseView):
     sprite_class_dct = {LoadingModel: LoadingSprite}
-    bgd_color = Color("lightblue")
-    bgd_name = "ashred"
-
-    def get_background(self):
-        background = getattr(self.resource.image, self.bgd_name)
-        return self.settings.scale_as_background(background, self.bgd_color)
+    bgd_color = "lightblue"
+    bgd_image = "image/ashred.png"
 
 # Loading state              
 

@@ -1,23 +1,33 @@
-from mvctools import BaseState, BaseModel, BaseController, BaseView
-from mvctools import NextStateException, Timer, AutoSprite
-from mvctools import cursoredlist, xytuple
+from mvctools.utils.menu import BaseMenuView, BaseMenuState, BaseMenuSprite
 
+from examples.common import DisplayedTimer, TimerSprite
+from examples.common import ChoiceModel, ChoiceSprite
+from examples.common import EntrySprite, EntryModel
+from examples.common import BackgroundModel, BackgroundSprite
 
-from examples.menuscreen import MenuController, MenuView, MenuModel, \
-                                EntryModel, EntrySprite, BackgroundModel, \
-                                TitleSprite
-from examples.settingscreen import SettingController, SettingModel, ChoiceModel, \
-                                   SettingView
-from examples.common import RendererSprite
+from examples.settingscreen import SettingModel
 
-import operator
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 from time import sleep
-from pygame import Color, Rect
-import pygame as pg
-
 
 # Model
+
+class LoadChoiceModel(ChoiceModel):
+
+    sleep_dct = {"NO": 0,
+                 "LOW": 0.01,
+                 "MEDIUM": 0.05,
+                 "HIGH": 0.1}
+
+    def init(self, *args, **kwargs):
+        ChoiceModel.init(self, *args, **kwargs)
+        self.current_load = 0
+
+    def register_validation(self):
+        self.current_load = self.sleep_dct[self.current]
+
+    def update(self):
+        sleep(self.current_load)
 
 class CpuTestModel(SettingModel):
 
@@ -26,114 +36,38 @@ class CpuTestModel(SettingModel):
     setting_dct = OrderedDict()
     setting_dct["CPU LOAD"] = ('NO', 'LOW', 'MEDIUM', 'HIGH')
 
+    choice_model_class = LoadChoiceModel
+
     def init(self):
-        self.background = BackgroundModel(self)
+        SettingModel.init(self)
         self.timer = DisplayedTimer(self, stop=60, periodic=True).start()
-        iterator = enumerate(self.setting_dct.iteritems())
-        self.entries = [ChoiceLoadModel(self, i, entry, values)
-                        for i, (entry, values) in iterator]
-        
-        iterator = enumerate(self.state.state_dct.iteritems(),
-                             len(self.entries))
-        self.entries += [EntryModel(self, i, entry, state)
-                         for i, (entry, state) in iterator]
-        
-        self.cursor = cursoredlist(self.entries)
-        self.cursor.get().selected = True
 
-class DisplayedTimer(Timer):
-    pass
-
-
-class ChoiceLoadModel(ChoiceModel):
-
-    dct = OrderedDict()
-    dct["NO"] = 0
-    dct["LOW"] = 0.01
-    dct["MEDIUM"] = 0.05
-    dct["HIGH"] = 0.1
-
-    def init(self, pos, text, values):
-        super(ChoiceLoadModel, self).init(pos, text, values)
-        self.apply()
-
-    def apply(self):
-        self.current = self.cursor.get()
-
-    def update(self):
-        sleep(self.dct[self.current])
-    
 
 # Sprite classes
 
-class ChoiceSprite(EntrySprite):
-
-    def init(self):
-        self.images = defaultdict(dict)
-        for value in self.model.cursor:
-            text = self.model.text + " : < " + value + " >"
-            for selection, ratio in self.font_ratios.items():
-                height = int(self.settings.size.y * ratio)
-                renderer = self.build_renderer(height)
-                image = renderer(text)
-                self.images[value][selection] = image
-
-    def get_image(self):
-        value = self.model.cursor.get()
-        return self.images[value][self.model.selected]
-
-class TimerSprite(RendererSprite):
+class CpuTestSprite(BaseMenuSprite):
     
-    font_ratio = 0.1
+    font_ratio = 0.15
     font_name = "visitor2"
-    font_color = Color("black")
-    position_ratio = (0.7, 0.9)
-    native_ratio = 4/3.0
-  
-    def init(self):
-        self.renderer = self.build_renderer()
-        self.digits = [DigitSprite(self, self.midleft)]
-        for x in range(4):
-            midleft = self.digits[x].rect.midright
-            self.digits.append(DigitSprite(self, midleft))
-
-    @property
-    def midleft(self):
-        return (self.settings.size * self.position_ratio).map(int)
-
-    def update(self):
-        time = self.model.get()
-        text = "{:05.2f}".format(time).replace(".",":")
-        for digits, value in zip(self.digits, text):
-            digits.value = value
-
-class DigitSprite(AutoSprite):
-  
-    def init(self, midleft, value="0"):
-        self.value = value
-        self.rect = self.get_image().get_rect(midleft=midleft)
-
-    def get_rect(self):
-        return self.image.get_rect(center=self.center)
-        
-    def get_image(self):
-        return self.parent.renderer(self.value)
-
-
+    font_color = "black"
+    position_ratio = (0.5, 0.3)
+    
 # View class
 
-class CpuTestView(SettingView):
-    pass
-CpuTestView.register_sprite_class(ChoiceLoadModel, ChoiceSprite)
-CpuTestView.register_sprite_class(CpuTestModel, TitleSprite)
-CpuTestView.register_sprite_class(DisplayedTimer, TimerSprite)
+class CpuTestView(BaseMenuView):
+    bgd_color = "grey"
+    bgd_image = None
+    sprite_class_dct = {LoadChoiceModel: ChoiceSprite,
+                        CpuTestModel: CpuTestSprite,
+                        EntryModel : EntrySprite,
+                        BackgroundModel: BackgroundSprite,
+                        DisplayedTimer: TimerSprite}
                         
 
 # Loading state              
 
-class CpuTestState(BaseState):
+class CpuTestState(BaseMenuState):
     model_class = CpuTestModel
-    controller_class = SettingController
     view_class = CpuTestView
     state_dct = OrderedDict()
 

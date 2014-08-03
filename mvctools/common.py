@@ -2,6 +2,7 @@
 
 import operator
 from collections import namedtuple, defaultdict
+from pygame import Color
 
 
 class xytuple(namedtuple("xytuple",("x","y"))):
@@ -98,4 +99,19 @@ class cachedict(defaultdict):
         else:
             self[key] = self.default_factory(index)
         return self[key]
+
+
+def cache(func):
+    dct = {}
+    def wrapper(arg):
+        if arg not in dct:
+            dct[arg] = func(arg)
+        return dct[arg]
+    wrapper.__doc__ = func.__doc__
+    wrapper.__name__ = func.__name__
+    return wrapper
+
+class Color(Color):
+    """ TODO """
+    pass
         

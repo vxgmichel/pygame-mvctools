@@ -5,9 +5,6 @@ from mvctools import BaseView, AutoSprite, Animation, xytuple
 from boardmodel import BlockModel, FloorModel, BlackHoleModel, \
                        BorderModel, PlayerModel, GoalModel
 
-# Pygame imports
-from pygame import Color
-import pygame as pg
 
 # Sprite classes
 
@@ -160,7 +157,7 @@ class BorderSprite(TileSprite):
 # View class
 
 class BoardView(BaseView):
-    bgd_color = Color("lightblue")
+    bgd_color = "lightblue"
     sprite_class_dct = {BlockModel: BlockSprite,
                         FloorModel: FloorSprite,
                         BlackHoleModel: BlackHoleSprite,
@@ -168,6 +165,4 @@ class BoardView(BaseView):
                         PlayerModel: PlayerSprite,
                         GoalModel: GoalSprite}
 
-    def get_background(self):
-        return self.settings.scale_as_background(color=self.bgd_color)
 

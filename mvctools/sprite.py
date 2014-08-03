@@ -52,11 +52,11 @@ class AutoSprite(DirtySprite):
 
     # Access autorect properties
 
-    def __getattr__(self, name):
-        if hasattr(Autorect, name) and \
-           isinstance(getattr(Autorect, name), property):
-            return getattr(self.rect, name)
-        return super(AutoSprite, self).__getattr__(name)
+    def __getattr__(self, attr):
+        if hasattr(Autorect, attr) and \
+           isinstance(getattr(Autorect, attr), property):
+            return getattr(self.rect, attr)
+        raise AttributeError(attr)
 
     # Method to override
 
