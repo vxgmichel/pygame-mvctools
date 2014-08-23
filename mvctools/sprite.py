@@ -102,6 +102,8 @@ class AutoSprite(DirtySprite):
 
     @layer.setter
     def layer(self, layer):
+        if layer is None:
+            layer = 0
         if self._layer != layer:
             self._layer = layer
             self.group.change_layer(self, layer)
@@ -122,6 +124,8 @@ class AutoSprite(DirtySprite):
 
     @image.setter
     def image(self, image):
+        if image is None:
+            image = Surface((0,0))
         if image is not self._image:
             self.set_dirty()
         self._image = image
@@ -138,6 +142,8 @@ class AutoSprite(DirtySprite):
 
     @rect.setter
     def rect(self, rect):
+        if rect is None:
+            rest = Autorect(self.image.get_rect())
         is_autorect = isinstance(rect, Autorect)
         if rect != self._rect:
             self.set_dirty()

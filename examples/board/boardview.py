@@ -120,8 +120,8 @@ class PlayerSprite(TileSprite):
                  2 : "green",}
     direction_dct = {(1, 0) : "sw",
                      (0, 1) : "se",
-                     (-1,0) : "nw",
-                     (0,-1) : "ne",}
+                     (0,-1) : "nw",
+                     (-1,0) : "ne",}
 
     def init(self):
         super(PlayerSprite, self).init()
@@ -137,6 +137,8 @@ class PlayerSprite(TileSprite):
         return self.resource.image.getdir(name)
 
     def get_image(self):
+        if self.model.on_goal:
+            return
         return self.animation_dct[self.model.dir].get()
 
     def get_layer(self):

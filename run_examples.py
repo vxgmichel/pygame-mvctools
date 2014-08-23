@@ -5,7 +5,7 @@ import pygame
 from mvctools.control import BaseControl
 from examples.loadingscreen import LoadingState
 from examples.menuscreen import MenuState
-from examples.isometricboard import BoardState
+from examples.board import BoardState
 from examples.pausescreen import PauseState
 from examples.settingscreen import SettingState
 from examples.cputestscreen import CpuTestState
