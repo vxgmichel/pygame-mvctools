@@ -87,14 +87,19 @@ class Timer(BaseModel):
         self._ratio = 0.0
         return self
 
-    def get(self):
-        return self._current_value
+    def get(self, normalized=False):
+        if not normalized:
+            return self._current_value
+        result = self._current_value - self._start
+        result /= self._stop - self._start
+        return result
+        
 
-    def reset_and_pause(self):
+    def reset(self):
         self._current_value = self._start
         return self.pause()
 
-    def set_and_pause(self, value=None):
+    def set(self, value=None):
         value = self._stop if value is None else value
         if self._start <= value <= self._stop:
             self._current_value = float(value)
@@ -115,9 +120,9 @@ class Timer(BaseModel):
             if self._periodic:
                 self.modulo_adjust()
             elif self._current_value <= self._start:
-                self.reset_and_pause()
+                self.reset()
             else:
-                self.set_and_pause()
+                self.set()
             if callable(self._callback):
                 self._callback(self)
         # Prepare next increment

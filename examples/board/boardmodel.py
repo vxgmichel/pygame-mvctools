@@ -1,5 +1,5 @@
 from mvctools import NextStateException, BaseModel, Timer
-from mvctools import xytuple, cursoredlist
+from mvctools import xytuple, cursoredlist, property_from_gamedata
 from collections import defaultdict
 from functools import partial
 
@@ -9,7 +9,7 @@ from functools import partial
 class TileModel(BaseModel):
     
     def init(self, pos):
-        self._pos = pos
+        self.pos = pos
 
     @property
     def pos(self):
@@ -34,50 +34,131 @@ class FloorModel(TileModel):
 class PlayerModel(TileModel):
 
     period = 1.5
+    moving_period = 0.1
+    transfrom_period = 0.1
+
+    # Inititalization
 
     def init(self, pos, pid):
         super(PlayerModel, self).init(pos)
-        self.timer = Timer(self, stop=self.period, periodic=True)
+        # Create timers
+        self.timer = Timer(self,
+                           stop=self.period,
+                           periodic=True)
+        self.transform_timer = Timer(self,
+                                     stop=self.transfrom_period,
+                                     callback=self.callback)
+        self.moving_timer = Timer(self,
+                                  stop=self.moving_period,
+                                  callback=self.callback)
         self.timer.start()
+        # Set attributes
         self.id = pid
         self.dir = xytuple(0,1)
         self.activedir = False
 
+    # Generator
+
     def projection(self):
         # Yield current tile
         board = self.parent
-        yield board.tile_dct[self.pos]
+        init_pos = self.round_pos if self.is_busy else self.pos
+        if isinstance(board.tile_dct[init_pos], FloorModel):
+            yield board.tile_dct[init_pos]
         # Break if direction not active
         if not self.activedir:
             return
-        # Get players position
-        player_pos = [p.pos for p in board.player_dct.values()]
+        # Get stop positions
+        if self.is_busy:
+            stop_pos = [self.real_pos + self.dir]
+        else:
+            stop_pos = [p.real_pos for p in board.player_dct.values()]
         # Yield tiles over the projection
-        current = board.tile_dct[self.pos+self.dir]
+        current = board.tile_dct[init_pos + self.dir]
         while isinstance(current, FloorModel) \
-          and current.pos not in player_pos:
+          and current.pos not in stop_pos:
             yield current
             current = board.tile_dct[current.pos+self.dir]
+
+    # Properties
+
+    @property
+    def pos(self):
+        if not self.is_busy:
+            return xytuple(*self.real_pos)
+        ratio = self.moving_timer.get(normalized=True)
+        return self.round_pos + self.dir * (ratio, ratio)
+
+    @pos.setter
+    def pos(self, value):
+        self.real_pos = xytuple(*value).map(int)
 
     @property
     def goal(self):
         return self.parent.goal_dct[self.id]
 
+    # Status properties
+
     @property
     def on_goal(self):
-        return self.pos == self.goal.pos
+        return self.pos == self.goal.pos and not self.is_busy
 
-    def register_validation(self):
-        # Update position
-        dest = list(self.projection())[-1]
-        self.pos = dest.pos
-        # Update activedir
-        self.activedir = self.activedir and not self.on_goal
-        # Update goal
+    @property
+    def is_moving(self):
+        return not self.moving_timer.is_paused()
+
+    @property
+    def is_transforming(self):
+        return not self.transform_timer.is_paused()
+
+    @property
+    def is_busy(self):
+        return self.is_transforming or self.is_moving
+
+    # Timer handling
+
+    def callback(self, timer):
+        # End of reduction
+        if timer is self.transform_timer:
+            if timer.is_set():
+                self.moving_timer.reset().start()
+            else:
+                self.timer.reset().start()
+                self.activedir = self.activedir and not self.on_goal
+        # End of moving over a tile
+        if timer is self.moving_timer:
+            if self.round_pos != self.real_pos:
+                self.round_pos += self.dir
+            timer.reset()
+            if self.round_pos != self.real_pos:
+                timer.start()
+            else:
+                self.transform_timer.start(-1)
+
+    # Update
+    
+    def update(self):
         ratio = (-1, +1)[self.on_goal]
         self.goal.timer.start(ratio)
+
+    # Register methods
+        
+    def register_validation(self):
+        if self.is_busy:
+            return
+        # Get destination
+        dest = list(self.projection())[-1]
+        if dest.pos == self.pos:
+            return
+        # Set up move
+        self.round_pos = self.pos
+        self.transform_timer.start()
+        # Set position
+        self.real_pos = dest.pos
         
     def register_direction(self, dirx, diry):
+        if self.is_moving:
+            return
         self.activedir = True
         self.dir = xytuple(dirx,diry)
 
@@ -115,17 +196,19 @@ class BlockModel(TileModel):
 
 class BoardModel(BaseModel):
 
-    # Initialize   
+    # Initialize
+    
+    @property_from_gamedata("board_level")
+    def level(self):
+        return 0
 
     def init(self):
-        # Build the board cursor
-        if not hasattr(self.gamedata, "board_clst"):
-            resource_lst = list(self.control.resource.map)
-            self.gamedata.board_clst = cursoredlist(resource_lst)
         # Build the board and tiles
         self.player_dct = {}
         self.goal_dct = {}
-        self.board = self.gamedata.board_clst.get()
+        self.resource_lst = list(self.control.resource.map)
+        try: self.board = self.resource_lst[self.level]
+        except IndexError: self.load_next_board()
         self.tile_dct = self.build_tiles(self.board)
         # Useful attributes
         self.max_coordinate = xytuple(*max(self.tile_dct))
@@ -135,9 +218,12 @@ class BoardModel(BaseModel):
     # Events
     
     def load_next_board(self):
-        self.gamedata.board_clst.inc(1)
-        isover = not self.gamedata.board_clst.cursor
-        next_state = self.state.next_state if isover else type(self.state)
+        self.level += 1
+        try: self.resource_lst[self.level]
+        except IndexError:
+            self.level = 0
+        is_over = not self.level
+        next_state = self.state.next_state if is_over else type(self.state)
         self.control.register_next_state(next_state)
         raise NextStateException
 

@@ -43,5 +43,6 @@ BoardState.pause_state = PauseState
 # Run the example
 if __name__ == "__main__":
     example = Example()
+    example.gamedata.board_level = 0
     example.run()
 

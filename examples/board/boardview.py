@@ -37,7 +37,7 @@ class TileSprite(AutoSprite):
 
     def compute_layer(self):
         pos = self.model.pos
-        return pos.x * self.model.parent.nb_column + pos.y
+        return pos.x + pos.y
 
     def isoconvert(self, pos):
         pos = xytuple(pos.y-pos.x, pos.x+pos.y)
@@ -116,6 +116,8 @@ class BlackHoleSprite(TileSprite):
 class PlayerSprite(TileSprite):
 
     fixed = False
+    moving_name = "moving_player"
+    transform_name = "transforming_player"
     color_dct = {1 : "red",
                  2 : "green",}
     direction_dct = {(1, 0) : "sw",
@@ -125,11 +127,21 @@ class PlayerSprite(TileSprite):
 
     def init(self):
         super(PlayerSprite, self).init()
+        # Base animation
         timer = self.model.timer
         resource_dct = {direction: self.get_folder(direction)
                         for direction in self.direction_dct}   
         self.animation_dct = {di: self.build_animation(re, timer)
-                              for di ,re in resource_dct.items()}   
+                              for di ,re in resource_dct.items()}
+        # Moving image
+        self.moving_image = self.scale_resource(self.resource.image,
+                                                self.moving_name)
+        # Transforming animation
+        transorm_resource = self.resource.image.getdir(self.transform_name)
+        transform_timer  = self.model.transform_timer
+        self.transform_animation = self.build_animation(transorm_resource,
+                                                        transform_timer,
+                                                        looping=False)
 
     def get_folder(self, direction):
         color = self.color_dct[self.model.id]
@@ -139,6 +151,10 @@ class PlayerSprite(TileSprite):
     def get_image(self):
         if self.model.on_goal:
             return
+        if self.model.is_moving:
+            return self.moving_image
+        if self.model.is_transforming:
+            return self.transform_animation.get()
         return self.animation_dct[self.model.dir].get()
 
     def get_layer(self):
@@ -152,7 +168,7 @@ class GoalSprite(TileSprite):
 
     def init(self):
         super(GoalSprite, self).init()
-        self.layer += 0.5
+        self.layer += 0.001
         self.animation = self.build_animation(self.folder, self.model.timer,
                                               looping = False)
         
