@@ -128,7 +128,8 @@ class Timer(BaseModel):
         # Prepare next increment
         delta = 1.0/self.state.current_fps
         self._next_increment = delta*self._ratio
-
+     
+    
 def property_from_gamedata(name):
     def wrapper(method):
         # Setter

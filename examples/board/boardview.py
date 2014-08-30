@@ -151,6 +151,8 @@ class PlayerSprite(TileSprite):
     def get_image(self):
         if self.model.on_goal:
             return
+        if self.model.is_dying:
+            return self.moving_image
         if self.model.is_moving:
             return self.moving_image
         if self.model.is_transforming:

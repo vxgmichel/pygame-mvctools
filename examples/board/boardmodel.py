@@ -36,6 +36,7 @@ class PlayerModel(TileModel):
     period = 1.5
     moving_period = 0.1
     transfrom_period = 0.1
+    dying_period = 0.1
 
     # Inititalization
 
@@ -47,15 +48,19 @@ class PlayerModel(TileModel):
                            periodic=True)
         self.transform_timer = Timer(self,
                                      stop=self.transfrom_period,
-                                     callback=self.callback)
+                                     callback=self.transform_callback)
         self.moving_timer = Timer(self,
                                   stop=self.moving_period,
-                                  callback=self.callback)
+                                  callback=self.moving_callback)
+        self.dying_timer = Timer(self,
+                                 stop=self.dying_period,
+                                 callback=self.dying_callback)
         self.timer.start()
         # Set attributes
         self.id = pid
         self.dir = xytuple(0,1)
         self.activedir = False
+        self.is_dead = False
 
     # Generator
 
@@ -75,9 +80,11 @@ class PlayerModel(TileModel):
             stop_pos = [p.real_pos for p in board.player_dct.values()]
         # Yield tiles over the projection
         current = board.tile_dct[init_pos + self.dir]
-        while isinstance(current, FloorModel) \
+        while isinstance(current, (FloorModel, BlackHoleModel)) \
           and current.pos not in stop_pos:
             yield current
+            if isinstance(current, BlackHoleModel):
+                break
             current = board.tile_dct[current.pos+self.dir]
 
     # Properties
@@ -86,6 +93,9 @@ class PlayerModel(TileModel):
     def pos(self):
         if not self.is_busy:
             return xytuple(*self.real_pos)
+        if self.is_dying:
+            ratio = self.dying_timer.get(normalized=True)
+            return self.round_pos + (ratio * 0.8,) * 2
         ratio = self.moving_timer.get(normalized=True)
         return self.round_pos + self.dir * (ratio, ratio)
 
@@ -100,6 +110,11 @@ class PlayerModel(TileModel):
     # Status properties
 
     @property
+    def on_black_hole(self):
+        tile = self.parent.tile_dct[self.pos]
+        return isinstance(tile, BlackHoleModel)
+
+    @property
     def on_goal(self):
         return self.pos == self.goal.pos and not self.is_busy
 
@@ -112,28 +127,38 @@ class PlayerModel(TileModel):
         return not self.transform_timer.is_paused()
 
     @property
+    def is_dying(self):
+        return not self.dying_timer.is_paused()
+
+    @property
     def is_busy(self):
-        return self.is_transforming or self.is_moving
+        return self.is_transforming or self.is_moving or self.is_dying
 
     # Timer handling
 
-    def callback(self, timer):
-        # End of reduction
-        if timer is self.transform_timer:
-            if timer.is_set():
-                self.moving_timer.reset().start()
-            else:
-                self.timer.reset().start()
-                self.activedir = self.activedir and not self.on_goal
-        # End of moving over a tile
-        if timer is self.moving_timer:
-            if self.round_pos != self.real_pos:
-                self.round_pos += self.dir
-            timer.reset()
-            if self.round_pos != self.real_pos:
-                timer.start()
-            else:
-                self.transform_timer.start(-1)
+    def transform_callback(self, timer):
+        if timer.is_set():
+            self.moving_timer.reset().start()
+        else:
+            self.timer.reset().start()
+            self.activedir = self.activedir and not self.on_goal
+
+    def moving_callback(self, timer):
+        # Handle position
+        if self.round_pos != self.real_pos:
+            self.round_pos += self.dir
+        timer.reset()
+        # What's next?
+        if self.round_pos != self.real_pos:
+            timer.start()
+        elif self.on_black_hole:
+            self.dying_timer.start()
+            self.active_dir = False
+        else:
+            self.transform_timer.start(-1)
+
+    def dying_callback(self, timer):
+        self.parent.load_next_board(win=False)
 
     # Update
     
@@ -157,7 +182,7 @@ class PlayerModel(TileModel):
         self.real_pos = dest.pos
         
     def register_direction(self, dirx, diry):
-        if self.is_moving:
+        if self.is_busy:
             return
         self.activedir = True
         self.dir = xytuple(dirx,diry)
@@ -217,13 +242,16 @@ class BoardModel(BaseModel):
 
     # Events
     
-    def load_next_board(self):
-        self.level += 1
-        try: self.resource_lst[self.level]
+    def load_next_board(self, win):
+        if win:
+            self.level += 1
+        try:
+            self.resource_lst[self.level]
         except IndexError:
             self.level = 0
-        is_over = not self.level
-        next_state = self.state.next_state if is_over else type(self.state)
+            next_state = self.state.next_state
+        else:
+            next_state = type(self.state)
         self.control.register_next_state(next_state)
         raise NextStateException
 
@@ -246,7 +274,7 @@ class BoardModel(BaseModel):
 
     def update(self):
         if all(goal.activated for goal in self.goal_dct.values()):
-            self.load_next_board()
+            self.load_next_board(win=True)
         self.update_floors()
 
     def update_floors(self):
@@ -257,7 +285,8 @@ class BoardModel(BaseModel):
         # Activate floors
         for player in self.player_dct.values():
             for tile in player.projection():
-                tile.set_activation(player.id)
+                if isinstance(tile, FloorModel):
+                    tile.set_activation(player.id)
 
     # Build
     
