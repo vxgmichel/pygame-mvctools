@@ -1,25 +1,70 @@
 from mvctools import BaseController, BaseModel, BaseView, BaseState
 from mvctools import cursoredlist
 from mvctools.utils.renderer import RendererSprite
-
+from collections import defaultdict
 import pygame as pg
 
 # Controller
 
 class BaseMenuController(BaseController):
 
+    axis_threshold = 0.5
+
+    key_dct = {pg.K_SPACE: "validation",
+               pg.K_RETURN: "validation",
+               pg.K_ESCAPE: "back",
+               pg.K_UP: "up",
+               pg.K_DOWN: "down",
+               pg.K_LEFT: "left",
+               pg.K_RIGHT: "right",}
+
+    axis_dct = {(0,-1): "left",
+                (0,+1): "right",
+                (1,-1): "up",
+                (1,+1): "down",}
+
+    hat_dct = {(0,-1): "down",
+               (0,+1): "up",
+               (-1,0): "left",
+               (+1,0): "right",}
+
+    button_dct = {0: "validation",
+                  1: "back",
+                  2: "validation",
+                  3: "back",}
+
     def init(self):
-        self.key_dct = {pg.K_SPACE: self.model.register_validation,
-                        pg.K_RETURN: self.model.register_validation,
-                        pg.K_UP: self.model.register_up,
-                        pg.K_DOWN: self.model.register_down,
-                        pg.K_LEFT: self.model.register_left,
-                        pg.K_RIGHT: self.model.register_right,}
+        factory = lambda: None
+        self.cache_dct = defaultdict(factory)
+        pg.joystick.quit()
+        pg.joystick.init()
+        for i in range(pg.joystick.get_count()):
+            pg.joystick.Joystick(i).init() 
 
     def handle_event(self, event):
-        if event.type == pg.KEYDOWN and event.key in self.key_dct:
-            self.key_dct[event.key]()
+        if event.type == pg.KEYDOWN:
+            self.register(self.key_dct, event.key)
+        if event.type == pg.JOYHATMOTION:
+            self.register(self.hat_dct, event.value)
+        if event.type == pg.JOYBUTTONDOWN:
+            self.register(self.button_dct, event.button)
+        if event.type == pg.JOYAXISMOTION:
+            key = (event.axis, self.axis_position(event.value))
+            self.register(self.axis_dct, key, "axis")
 
+    def axis_position(self, arg):
+        return cmp(arg, 0) if abs(arg) >= self.axis_threshold else 0
+
+    def register(self, dct, key, cache=None):
+        # Caching
+        if cache == "axis":
+            if self.cache_dct[cache, key[0]] == key[1]:
+                return
+            self.cache_dct[cache, key[0]] = key[1]
+        # Register
+        name = dct.get(key)
+        if name:
+            getattr(self.model, "register_"+name)()
 
 # Secondary model
 
@@ -32,14 +77,6 @@ class BaseEntryModel(BaseModel):
     @property
     def selected(self):
         return self is self.parent.cursor.get()
-
-    def register_validation(self):
-        if self.selected:
-            self.validate()
-
-    def register_validation(self):
-        if self.selected:
-            self.validate()
 
     def register_validation(self):
         if self.selected:
@@ -82,6 +119,9 @@ class BaseMenuModel(BaseModel):
 
     def register_validation(self):
         self.cursor.get().register_validation()
+
+    def register_back(self):
+        self.cursor[-1].register_validation()
 
 
 # Main Sprite

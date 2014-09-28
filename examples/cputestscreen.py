@@ -69,5 +69,5 @@ class CpuTestView(BaseMenuView):
 class CpuTestState(BaseMenuState):
     model_class = CpuTestModel
     view_class = CpuTestView
-    state_dct = OrderedDict()
+    state_dct = {"Back": None}
 

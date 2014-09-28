@@ -23,7 +23,7 @@ class Example(BaseControl):
 
 
 # Set the links between the different states
-Example.first_state = LoadingState
+Example.first_state = MenuState
 
 LoadingState.next_state = MenuState
 
@@ -31,11 +31,6 @@ MenuState.state_dct["Play"] = BoardState
 MenuState.state_dct["Settings"] = SettingState
 MenuState.state_dct["CPUTest"] = CpuTestState
 MenuState.state_dct["Quit"] = None
-
-
-SettingState.state_dct["Back"] = MenuState
-
-CpuTestState.state_dct["Back"] = MenuState
 
 BoardState.next_state = MenuState
 BoardState.pause_state = PauseState

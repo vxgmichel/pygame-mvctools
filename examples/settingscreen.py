@@ -78,5 +78,5 @@ class SettingView(BaseMenuView):
 class SettingState(BaseMenuState):
     model_class = SettingModel
     view_class = SettingView
-    state_dct = OrderedDict()
+    state_dct = {"Back": None}
 

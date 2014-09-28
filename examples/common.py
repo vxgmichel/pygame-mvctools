@@ -14,6 +14,8 @@ class EntryModel(BaseEntryModel):
         self.state = state
 
     def register_validation(self):
+        if self.state:
+            self.control.push_current_state()
         self.control.register_next_state(self.state)
         raise NextStateException
     
