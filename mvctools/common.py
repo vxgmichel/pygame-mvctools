@@ -9,10 +9,10 @@ class xytuple(namedtuple("xytuple",("x","y"))):
     """Tuple for x,y coordinates and their transformations.
 
     This class supports the following operators:
-    - addition and inplace addition (+, +=)
-    - substraction and inplace substraction (-, -=)
-    - multiplication and inplace multiplication (*, *=)
-    - division and inplace division (/, /=)
+     - addition and inplace addition (+, +=)
+     - substraction and inplace substraction (-, -=)
+     - multiplication and inplace multiplication (* , * =)
+     - division and inplace division (/, /=)
 
     These are all term-to-term operations.
     Hence, the argument has two be a two-elements iterable.
@@ -50,16 +50,15 @@ class xytuple(namedtuple("xytuple",("x","y"))):
 
 
 class cursoredlist(list):
-    """Enhanced list with a cursor attribute"""
+    """Enhanced list with a cursor attribute
+
+    Args:
+        iterator (any iterable): Iterator to build the list from
+        pos (int): Initial cursor value (default is 0)
+    """
     
     def __init__(self, iterator, cursor=0):
-        """Inititalize the cursor.
-
-        :param iterator: Iterator to build the list from
-        :type iterator: any iterable
-        :param pos: Initial cursor value (default is 0)
-        :type pos: int
-        """
+        """Inititalize the cursor."""
         list.__init__(self, iterator)
         self.cursor = cursor
 
@@ -75,8 +74,8 @@ class cursoredlist(list):
     def inc(self, inc):
         """Increment the cursor and return the new current object.
 
-        :param inc: Number of incrementation of the cursor
-        :type inc: int
+        Args:
+            inc (int): Number of incrementation of the cursor
         """
         self.cursor += inc
         return self.get()
@@ -84,8 +83,8 @@ class cursoredlist(list):
     def dec(self, dec):
         """Decrement the cursor and return the new current object.
 
-        :param dec: Number of decrementation of the cursor
-        :type dec: int
+        Args:
+            dec (int): Number of decrementation of the cursor
         """
         self.cursor -= dec
         return self.get()
@@ -117,6 +116,6 @@ def cache(func):
     return wrapper
 
 class Color(Color):
-    """ TODO """
+    """TODO: Enhanced version of pygame.Color."""
     pass
         

@@ -18,46 +18,54 @@ class BaseControl:
     It also allows to stack/unstack states for purpose of menuing.
 
     It owns the data common to all the states such as:
-    - the settings (self.settings)
-    - the game data (self.gamedata)
-    - the resource handler (self.resource)
+     - the settings (**self.settings**)
+     - the game data (**self.gamedata**)
+     - the resource handler (**self.resource**)
 
     These class attributes may be useful to overwrite:
-    - settings_class : Class to handle the settings (default is BaseSettings)
-    - gamedata_class : Class to handle the settings (default is BaseGamedata)
-    - fist_state : Class of the first state to instantiate and run.
-    - resource_dict : name of the resource folder (default is "resource")
-    - window_title : title of the window (default is "Pygame")
-    - display_fps : display the fps rate in the window title (default is True)
+     - **settings_class** : Class to handle the settings
+       (default is BaseSettings)
+     - **gamedata_class** : Class to handle the settings
+       (default is BaseGamedata)
+     - **fist_state** : Class of the first state to instantiate and run.
+       (default is None)
+     - **resource_dict** : name of the resource folder
+       (default is "resource")
+     - **window_title** : title of the window
+       (default is "Pygame")
+     - **display_fps** : display the fps rate in the window title
+       (default is True)
 
     This method may also be useful to overwrite:
-    - pre_run : code to run after the video mode is set and before the first
-                state is instantiated
+     - **pre_run** : code to run after the video mode is set and before the
+       first state is instantiated
 
     These methods are useful to call from the states or their mvc:
-    - push_current_state : push the current state into the stack
-    - register_next_state : register the class of the next state to
-                            instantiate and run
+     - **push_current_state** : push the current state into the stack
+     - **register_next_state** : register the class of the next state to
+       instantiate and run
     
     Some important points to know about the control creating the next state:
-    - The registered state is automatically unregistered when instanciated
-    - If no state is registered, the next state is poped from the stack
-    - In that case, if the stack is empty, the program ends properly
+     - The registered state is automatically unregistered when instanciated
+     - If no state is registered, the next state is poped from the stack
+     - In that case, if the stack is empty, the program ends properly
 
     To launch the game, simply call the method run.
 
-    Example:
-    # Create the main control
-    class Example(BaseControl):
+    Example: ::
+    
+        # Create the main control
+        class Example(BaseControl):
 
-        window_title = "Example v1.0"
-
-        def pre_run(self) :
-            pygame.mouse.set_visible(False)
+            window_title = "Example v1.0"
+            first_state = SomeState
             
-    # Run the main control
-    example = Example()
-    example.run()
+            def pre_run(self) :
+                pygame.mouse.set_visible(False)
+            
+        # Run the main control
+        example = Example()
+        example.run()
     """
 
     # Class attributes
@@ -80,10 +88,10 @@ class BaseControl:
     def load_next_state(self):
         """Load the next state.
 
-        The rules are:
-        - The registered state is automatically unregistered when instanciated
-        - If no state is registered, the next state is poped from the stack
-        - In that case, if the stack is empty, the program ends properly
+        Note the following:
+         - The registered state is automatically unregistered when instanciated
+         - If no state is registered, the next state is poped from the stack
+         - In that case, if the stack is empty, the program ends properly
         """
         if self.next_state:
             self.current_state = self.next_state(self)
@@ -101,7 +109,7 @@ class BaseControl:
             self.current_state.reload()
 
     def full_reload(self):
-        """Fully reload current state if it's ticking."""
+        """Fully reload current state if it is active."""
         if self.current_state and self.current_state.ticking:
             self.push_current_state()
             raise NextStateException
@@ -131,8 +139,8 @@ class BaseControl:
     def register_next_state(self, state):
         """Register the class of the next state to instantiate and run.
 
-        :param state: the class of the next state to instantiate and run
-        :type state: a class inheriting from BaseState
+        Args:
+            state (type): the class of the next state to instantiate and run
         """
         self.next_state = state
 
