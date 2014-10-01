@@ -1,6 +1,5 @@
 """Module for the state control related objects."""
 
-
 # Imports
 import pygame, sys
 from mvctools.gamedata import BaseGamedata
@@ -18,11 +17,11 @@ class BaseControl:
     It also allows to stack/unstack states for purpose of menuing.
 
     It owns the data common to all the states such as:
-     - the settings (**self.settings**)
-     - the game data (**self.gamedata**)
-     - the resource handler (**self.resource**)
+     - **self.settings**: the game settings
+     - **self.gamedata**: the data shared between the states
+     - **self.resource**: the game resources
 
-    These class attributes may be useful to overwrite:
+    These class attributes may be useful to override:
      - **settings_class** : Class to handle the settings
        (default is BaseSettings)
      - **gamedata_class** : Class to handle the settings
@@ -36,11 +35,11 @@ class BaseControl:
      - **display_fps** : display the fps rate in the window title
        (default is True)
 
-    This method may also be useful to overwrite:
+    This method may also be useful to override:
      - **pre_run** : code to run after the video mode is set and before the
        first state is instantiated
 
-    These methods are useful to call from the states or their mvc:
+    These methods can be called from the states or their mvc:
      - **push_current_state** : push the current state into the stack
      - **register_next_state** : register the class of the next state to
        instantiate and run
@@ -129,7 +128,7 @@ class BaseControl:
         self.safe_exit()
 
     def pre_run(self):
-        """ Method to overwrite.
+        """ Empty method to override.
 
         This code is executed after the video mode is set and before the first
         state is instantiated.
