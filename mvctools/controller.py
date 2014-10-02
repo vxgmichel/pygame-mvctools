@@ -53,7 +53,7 @@ class BaseController:
     def _update(self):
         """Process the events.
 
-        Called at each tick the state.
+        Called at each tick of the state.
         """
         for ev in pg.event.get():
             if self._handle_event(ev):
@@ -79,7 +79,7 @@ class BaseController:
         Args:
             event (Event): a pygame event
         Return:
-            bool: True to stop the current state, False otherwise.
+            bool: True to stop the current state, False (or None) otherwise.
 
         An overwritten version of this method should regiser actions
         to the model.
@@ -89,13 +89,28 @@ class BaseController:
             def handle_event(event):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
-                        self.model.register_up()
+                        return self.model.register_up() # OR
+                        # return self.register("up")
             
 
-        Note: It is probably a bad idea to return True since stopping
-        the current state should be the model decision.
+        Note: It is probably a bad idea to return directly True since
+        stopping the current state should be the model decision.
         """
         pass
+
+    def register(self, name, *args, **kwargs):
+        """Convenience function to register an action to the model.
+
+        Args:
+            name (str): name of the action to register
+            args (list): arguments to pass to the model method
+            kwargs (dict): keywords arguments to pass to the model method 
+        Return:
+            bool: True to indicate that the model wants to stop
+            the current state, False otherwise.
+        """
+        method = getattr(self.model, 'register_' + name)
+        return bool(method(*args, **kwargs))
 
     def is_quit_event(self, event):
         """Define what a quit event is. Include pygame.Quit and Alt+F4.

@@ -49,7 +49,7 @@ class BaseView(object):
         pg.display.update(dirty)
 
     def gen_sprites(self):
-        for key,obj in self.model:
+        for key,obj in self.model.get_model_dct():
             if key not in self.sprite_dct:
                 cls = self.get_sprite_class(obj)
                 if cls:
