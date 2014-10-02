@@ -1,0 +1,471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Model documentation &mdash; pygame-mvctools 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygame-mvctools 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Resource documentation" href="resource.html" />
+    <link rel="prev" title="Gamedata documentation" href="gamedata.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="resource.html" title="Resource documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gamedata.html" title="Gamedata documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-mvctools.model">
+<span id="model-documentation"></span><h1>Model documentation<a class="headerlink" href="#module-mvctools.model" title="Permalink to this headline">¶</a></h1>
+<p>Module containing the model base class.</p>
+<dl class="class">
+<dt id="mvctools.model.BaseModel">
+<em class="property">class </em><tt class="descclassname">mvctools.model.</tt><tt class="descname">BaseModel</tt><big>(</big><em>parent</em>, <em>*args</em>, <em>**kargs</em><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model base class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parent</strong> (<em>BaseModel or BaseControl</em>) &#8211;
+the parent of the model</li>
+<li><strong>args</strong> (<em>list</em>) &#8211;
+custom arguments</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211;
+custom keyword arguments</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Note the following:</dt>
+<dd><ul class="first last simple">
+<li>To a given state corresponds a main model.</li>
+<li>It is possible for a model to have children.</li>
+<li>A children is automatically registered at initialization.</li>
+<li>A children is automatically unregistered at deletion.</li>
+<li>The state automatically update every model registered.</li>
+</ul>
+</dd>
+<dt>A subclass of BaseModel may override the following method:</dt>
+<dd><ul class="first last simple">
+<li><strong>init</strong>: called at initialization
+(default: create a timer <strong>self.lifetime</strong>)</li>
+<li><strong>reload</strong>: called when the state is reloaded
+(default: do nothing)</li>
+<li><strong>update</strong>: called at each tick of the state
+(default: do nothing)</li>
+</ul>
+</dd>
+<dt>An instance has the following attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.state</strong>: the state that uses the controller</li>
+<li><strong>self.control</strong>: the game that uses the controller</li>
+<li><strong>self.gamedata</strong>: the game data of the control</li>
+<li><strong>self.key</strong>: a unique identifier for the model</li>
+<li><strong>self.parent</strong>: the parent of the model</li>
+<li><strong>self.children</strong>: the children dictionary</li>
+<li><strong>self.isroot</strong>: True if it is the main model</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="mvctools.model.BaseModel.__del__">
+<tt class="descname">__del__</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.__del__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregister itself.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.BaseModel.__getattr__">
+<tt class="descname">__getattr__</tt><big>(</big><em>attr</em><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.__getattr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle the registering functions.</p>
+<p>If the model doesn&#8217;t have its own corresponding handler,
+it will recursively look into its children.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>func</em> &#8211;
+a callable that recursively look into the children</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><tt class="xref py py-exc docutils literal"><span class="pre">AttributeError</span></tt> &#8211; 
+in regular cases.</td>
+</tr>
+</tbody>
+</table>
+<p>Warning: no exception is raised if no handler is found.
+It will be silentely ignored and False will be returned</p>
+<p>This choice has been made on purpose, considering the controller
+might register more types of actions than the model can handle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.BaseModel.__iter__">
+<tt class="descname">__iter__</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterator support.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>list</em> &#8211;
+the direct children.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.BaseModel.get_model_dct">
+<tt class="descname">get_model_dct</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.get_model_dct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively get the dictionnary of all models with
+their associated key (including itself).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>dict</em> &#8211;
+the (key, model) dictionnary</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.BaseModel.init">
+<tt class="descname">init</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to override.</p>
+<p>Called at initialization with the same arguments as the <strong>__init__</strong>
+method, but without the parent. If a model has to be initialized with
+custom arguments, this is where they should be handled.</p>
+<p>The base implementation also start a timer call <strong>self.lifetime</strong>.
+It is a non periodic timer with no upper limit and no callback.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.BaseModel.reload">
+<tt class="descname">reload</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty method to override if needed.</p>
+<p>Called when the state is reloaded.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.BaseModel.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.BaseModel.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty method to override.</p>
+<p>Called at each tick of the state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> &#8211;
+True to stop the current state, False otherwise.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mvctools.model.Timer">
+<em class="property">class </em><tt class="descclassname">mvctools.model.</tt><tt class="descname">Timer</tt><big>(</big><em>parent</em>, <em>*args</em>, <em>**kargs</em><big>)</big><a class="headerlink" href="#mvctools.model.Timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timer model class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parent</strong> (<em>BaseModel</em>) &#8211;
+the parent of the timer</li>
+<li><strong>start</strong> (<em>int</em>) &#8211;
+start value for the timer (default is 0)</li>
+<li><strong>stop</strong> (<em>int or None</em>) &#8211;
+stop value for the timer
+(default is None for no upper limit)</li>
+<li><strong>periodic</strong> (<em>bool</em>) &#8211;
+True for the timer to start over after it
+reaches the stop value (default is False)</li>
+<li><strong>callback</strong> (<em>func</em>) &#8211;
+function to be called when the timer
+reaches the stop value (default is None)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>It uses the current system FPS value to update accordingly.
+This way, the timer ignore lags or frame rate variations.</p>
+<dl class="method">
+<dt id="mvctools.model.Timer.get">
+<tt class="descname">get</tt><big>(</big><em>normalized=False</em><big>)</big><a class="headerlink" href="#mvctools.model.Timer.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current value of the timer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>normalized</strong> (<em>bool</em>) &#8211;
+normalize the value with start
+and stop value (default is False)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>float</em> &#8211;
+current value (between 0 and 1 if normalized.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.get_interval">
+<tt class="descname">get_interval</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.get_interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the (start, stop) interval as a tuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.init">
+<tt class="descname">init</tt><big>(</big><em>start=0</em>, <em>stop=None</em>, <em>periodic=False</em>, <em>callback=None</em><big>)</big><a class="headerlink" href="#mvctools.model.Timer.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initalize the timer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parent</strong> (<em>BaseModel</em>) &#8211;
+the parent of the timer</li>
+<li><strong>start</strong> (<em>int</em>) &#8211;
+start value for the timer (default is 0)</li>
+<li><strong>stop</strong> (<em>int or None</em>) &#8211;
+stop value for the timer
+(default is None for no upper limit)</li>
+<li><strong>periodic</strong> (<em>bool</em>) &#8211;
+True for the timer to start over after it
+reaches the stop value (default is False)</li>
+<li><strong>callback</strong> (<em>func</em>) &#8211;
+function to be called when the timer
+reaches the stop value (default is None)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.is_paused">
+<tt class="descname">is_paused</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.is_paused" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the timer is paused, False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.is_reset">
+<tt class="descname">is_reset</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.is_reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the timer reached its start value.
+Return False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.is_set">
+<tt class="descname">is_set</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.is_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the timer reached its stop value.
+Return False otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.pause">
+<tt class="descname">pause</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the timer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">itself for affectation</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the timer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">itself for affectation</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.set">
+<tt class="descname">set</tt><big>(</big><em>value=None</em><big>)</big><a class="headerlink" href="#mvctools.model.Timer.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the timer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<em>float or None</em>) &#8211;
+value to set the timer,
+set to stop if value is None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>model</em> &#8211;
+itself for affectation</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><tt class="xref py py-exc docutils literal"><span class="pre">ValueError</span></tt> &#8211; 
+if value not between start and stop</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.start">
+<tt class="descname">start</tt><big>(</big><em>ratio=1.0</em><big>)</big><a class="headerlink" href="#mvctools.model.Timer.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the timer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ratio</strong> (<em>float</em>) &#8211;
+speed in unit per seconds (default is 1.0)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">itself for affectation</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.model.Timer.update">
+<tt class="descname">update</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.model.Timer.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the timer.</p>
+<p>Use <strong>self.state.current_fps</strong> to update the current value
+accordingly. Also call the callback if needed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="mvctools.model.property_from_gamedata">
+<tt class="descclassname">mvctools.model.</tt><tt class="descname">property_from_gamedata</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#mvctools.model.property_from_gamedata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a property from an attribute name in gamedata.</p>
+<dl class="docutils">
+<dt>Here is the behavior of this property:</dt>
+<dd><ul class="first last simple">
+<li>If a read access is made, the gamedata attribute is returned.</li>
+<li>If that attribute doesn&#8217;t exist, the decorated function is used
+as a factory, the attribute is set and the value returned.</li>
+<li>If a write access is made, the dataattribute is simply set.</li>
+<li>If a deletion is made, the attribute is cleared from the gamedata.</li>
+</ul>
+</dd>
+</dl>
+<p>The main purpose is simplify the communication between the model
+and the gamedata.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>@property_from_gamedata(&quot;player_score&quot;):
+def score(self):
+    return 0
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gamedata.html"
+                        title="previous chapter">Gamedata documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="resource.html"
+                        title="next chapter">Resource documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/model.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="resource.html" title="Resource documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="gamedata.html" title="Gamedata documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>

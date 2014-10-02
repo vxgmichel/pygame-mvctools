@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Controller documentation &mdash; pygame-mvctools 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygame-mvctools 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Gamedata documentation" href="gamedata.html" />
+    <link rel="prev" title="Control documentation" href="control.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gamedata.html" title="Gamedata documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="control.html" title="Control documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-mvctools.controller">
+<span id="controller-documentation"></span><h1>Controller documentation<a class="headerlink" href="#module-mvctools.controller" title="Permalink to this headline">¶</a></h1>
+<p>Module containing the base controller class.</p>
+<dl class="class">
+<dt id="mvctools.controller.BaseController">
+<em class="property">class </em><tt class="descclassname">mvctools.controller.</tt><tt class="descname">BaseController</tt><big>(</big><em>state</em>, <em>model</em><big>)</big><a class="headerlink" href="#mvctools.controller.BaseController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base controller class for the MVC pattern implementation.</p>
+<p>Shouldn&#8217;t be instanciated manually but
+subclassed then registered in a State class.</p>
+<dl class="docutils">
+<dt>A subclass of BaseController may override the following method:</dt>
+<dd><ul class="first last simple">
+<li><strong>init</strong>: called at initialization
+(default: do nothing)</li>
+<li><strong>is_quit_event</strong>: define what a quit event is
+(default: pygame.QUIT and Alt+f4)</li>
+<li><strong>handle_event</strong>: process a given event
+(default: do nothing)</li>
+</ul>
+</dd>
+<dt>An instance has the following attributes:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.state</strong>: the state that uses the controller</li>
+<li><strong>self.control</strong>: the game that uses the controller</li>
+<li><strong>self.model</strong>: the model associated with the controller</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="mvctools.controller.BaseController.handle_event">
+<tt class="descname">handle_event</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#mvctools.controller.BaseController.handle_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty method to override.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<em>Event</em>) &#8211;
+a pygame event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> &#8211;
+True to stop the current state, False (or None) otherwise.</td>
+</tr>
+</tbody>
+</table>
+<p>An overwritten version of this method should regiser actions
+to the model.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">handle_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">KEYDOWN</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_UP</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">register_up</span><span class="p">()</span> <span class="c"># OR</span>
+            <span class="c"># return self.register(&quot;up&quot;)</span>
+</pre></div>
+</div>
+<p>Note: It is probably a bad idea to return directly True since
+stopping the current state should be the model decision.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.controller.BaseController.init">
+<tt class="descname">init</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.controller.BaseController.init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty method to override if needed.</p>
+<p>Called at initialization.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.controller.BaseController.is_quit_event">
+<tt class="descname">is_quit_event</tt><big>(</big><em>event</em><big>)</big><a class="headerlink" href="#mvctools.controller.BaseController.is_quit_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define what a quit event is. Include pygame.Quit and Alt+F4.</p>
+<p>Can be overriden to include more quit events.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<em>Event</em>) &#8211;
+a pygame event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><em>bool</em> &#8211;
+True if event is a quit event</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.controller.BaseController.register">
+<tt class="descname">register</tt><big>(</big><em>name</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#mvctools.controller.BaseController.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convenience function to register an action to the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>str</em>) &#8211;
+name of the action to register</li>
+<li><strong>args</strong> (<em>list</em>) &#8211;
+arguments to pass to the model method</li>
+<li><strong>kwargs</strong> (<em>dict</em>) &#8211;
+keywords arguments to pass to the model method</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><em>bool</em> &#8211;
+True to indicate that the model wants to stop
+the current state, False otherwise.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="control.html"
+                        title="previous chapter">Control documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="gamedata.html"
+                        title="next chapter">Gamedata documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/controller.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gamedata.html" title="Gamedata documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="control.html" title="Control documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>

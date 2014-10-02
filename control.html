@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Control documentation &mdash; pygame-mvctools 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygame-mvctools 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Controller documentation" href="controller.html" />
+    <link rel="prev" title="Common documentation" href="common.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="controller.html" title="Controller documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="Common documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-mvctools.control">
+<span id="control-documentation"></span><h1>Control documentation<a class="headerlink" href="#module-mvctools.control" title="Permalink to this headline">¶</a></h1>
+<p>Module for the state control related objects.</p>
+<dl class="class">
+<dt id="mvctools.control.BaseControl">
+<em class="property">class </em><tt class="descclassname">mvctools.control.</tt><tt class="descname">BaseControl</tt><a class="headerlink" href="#mvctools.control.BaseControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for the state control.</p>
+<p>Its main puprpose is to run the states and handle the transitions between
+them. It provides for instance a method to register the next state to run.
+It also allows to stack/unstack states for purpose of menuing.</p>
+<dl class="docutils">
+<dt>It owns the data common to all the states such as:</dt>
+<dd><ul class="first last simple">
+<li><strong>self.settings</strong>: the game settings</li>
+<li><strong>self.gamedata</strong>: the data shared between the states</li>
+<li><strong>self.resource</strong>: the game resources</li>
+</ul>
+</dd>
+<dt>These class attributes may be useful to override:</dt>
+<dd><ul class="first last simple">
+<li><strong>settings_class</strong> : Class to handle the settings
+(default is BaseSettings)</li>
+<li><strong>gamedata_class</strong> : Class to handle the settings
+(default is BaseGamedata)</li>
+<li><strong>fist_state</strong> : Class of the first state to instantiate and run.
+(default is None)</li>
+<li><strong>resource_dict</strong> : name of the resource folder
+(default is &#8220;resource&#8221;)</li>
+<li><strong>window_title</strong> : title of the window
+(default is &#8220;Pygame&#8221;)</li>
+<li><strong>display_fps</strong> : display the fps rate in the window title
+(default is True)</li>
+</ul>
+</dd>
+<dt>This method may also be useful to override:</dt>
+<dd><ul class="first last simple">
+<li><strong>pre_run</strong> : code to run after the video mode is set and before the
+first state is instantiated</li>
+</ul>
+</dd>
+<dt>These methods can be called from the states or their mvc:</dt>
+<dd><ul class="first last simple">
+<li><strong>push_current_state</strong> : push the current state into the stack</li>
+<li><strong>register_next_state</strong> : register the class of the next state to
+instantiate and run</li>
+</ul>
+</dd>
+<dt>Some important points to know about the control creating the next state:</dt>
+<dd><ul class="first last simple">
+<li>The registered state is automatically unregistered when instanciated</li>
+<li>If no state is registered, the next state is poped from the stack</li>
+<li>In that case, if the stack is empty, the program ends properly</li>
+</ul>
+</dd>
+</dl>
+<p>To launch the game, simply call the method run.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Create the main control</span>
+<span class="k">class</span> <span class="nc">Example</span><span class="p">(</span><span class="n">BaseControl</span><span class="p">):</span>
+
+    <span class="n">window_title</span> <span class="o">=</span> <span class="s">&quot;Example v1.0&quot;</span>
+    <span class="n">first_state</span> <span class="o">=</span> <span class="n">SomeState</span>
+
+    <span class="k">def</span> <span class="nf">pre_run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="p">:</span>
+        <span class="n">pygame</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># Run the main control</span>
+<span class="n">example</span> <span class="o">=</span> <span class="n">Example</span><span class="p">()</span>
+<span class="n">example</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="mvctools.control.BaseControl.full_reload">
+<tt class="descname">full_reload</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.full_reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fully reload current state if it is active.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="mvctools.control.BaseControl.gamedata_class">
+<tt class="descname">gamedata_class</tt><a class="headerlink" href="#mvctools.control.BaseControl.gamedata_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">BaseGamedata</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.get_fps">
+<tt class="descname">get_fps</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.get_fps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current fps rate setting.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.load_next_state">
+<tt class="descname">load_next_state</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.load_next_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the next state.</p>
+<dl class="docutils">
+<dt>Note the following:</dt>
+<dd><ul class="first last simple">
+<li>The registered state is automatically unregistered when instanciated</li>
+<li>If no state is registered, the next state is poped from the stack</li>
+<li>In that case, if the stack is empty, the program ends properly</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.pop_state">
+<tt class="descname">pop_state</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.pop_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pop the last-in state from the stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.pre_run">
+<tt class="descname">pre_run</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.pre_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Empty method to override.</p>
+<p>This code is executed after the video mode is set and before the first
+state is instantiated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.push_current_state">
+<tt class="descname">push_current_state</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.push_current_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Push the current state into the stack.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.register_next_state">
+<tt class="descname">register_next_state</tt><big>(</big><em>state</em><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.register_next_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register the class of the next state to instantiate and run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>state</strong> (<em>type</em>) &#8211;
+the class of the next state to instantiate and run</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.reload">
+<tt class="descname">reload</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reload current state.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.control.BaseControl.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the game.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="mvctools.control.BaseControl.safe_exit">
+<em class="property">static </em><tt class="descname">safe_exit</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.control.BaseControl.safe_exit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exit pygame safely.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="common.html"
+                        title="previous chapter">Common documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="controller.html"
+                        title="next chapter">Controller documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/control.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="controller.html" title="Controller documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="common.html" title="Common documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>

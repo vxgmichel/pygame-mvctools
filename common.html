@@ -1,0 +1,274 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Common documentation &mdash; pygame-mvctools 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pygame-mvctools 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Control documentation" href="control.html" />
+    <link rel="prev" title="Welcome to pygame-mvctools documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="control.html" title="Control documentation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pygame-mvctools documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-mvctools.common">
+<span id="common-documentation"></span><h1>Common documentation<a class="headerlink" href="#module-mvctools.common" title="Permalink to this headline">¶</a></h1>
+<p>Module with useful classes and functions.</p>
+<dl class="class">
+<dt id="mvctools.common.Color">
+<em class="property">class </em><tt class="descclassname">mvctools.common.</tt><tt class="descname">Color</tt><a class="headerlink" href="#mvctools.common.Color" title="Permalink to this definition">¶</a></dt>
+<dd><p>TODO: Enhanced version of pygame.Color.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="mvctools.common.cursoredlist">
+<em class="property">class </em><tt class="descclassname">mvctools.common.</tt><tt class="descname">cursoredlist</tt><big>(</big><em>iterator</em>, <em>cursor=0</em><big>)</big><a class="headerlink" href="#mvctools.common.cursoredlist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enhanced list with a cursor attribute</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>iterator</strong> (<em>any iterable</em>) &#8211;
+Iterator to build the list from</li>
+<li><strong>pos</strong> (<em>int</em>) &#8211;
+Initial cursor value (default is 0)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="mvctools.common.cursoredlist.dec">
+<tt class="descname">dec</tt><big>(</big><em>dec</em><big>)</big><a class="headerlink" href="#mvctools.common.cursoredlist.dec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decrement the cursor and return the new current object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dec</strong> (<em>int</em>) &#8211;
+Number of decrementation of the cursor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.cursoredlist.get">
+<tt class="descname">get</tt><big>(</big><em>default=None</em><big>)</big><a class="headerlink" href="#mvctools.common.cursoredlist.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.cursoredlist.inc">
+<tt class="descname">inc</tt><big>(</big><em>inc</em><big>)</big><a class="headerlink" href="#mvctools.common.cursoredlist.inc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Increment the cursor and return the new current object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inc</strong> (<em>int</em>) &#8211;
+Number of incrementation of the cursor</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.cursoredlist.set">
+<tt class="descname">set</tt><big>(</big><em>index</em><big>)</big><a class="headerlink" href="#mvctools.common.cursoredlist.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the cursor to an arbitrary index value.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="mvctools.common.xytuple">
+<em class="property">class </em><tt class="descclassname">mvctools.common.</tt><tt class="descname">xytuple</tt><a class="headerlink" href="#mvctools.common.xytuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tuple for x,y coordinates and their transformations.</p>
+<dl class="docutils">
+<dt>This class supports the following operators:</dt>
+<dd><ul class="first last simple">
+<li>addition and inplace addition (+, +=)</li>
+<li>substraction and inplace substraction (-, -=)</li>
+<li>multiplication and inplace multiplication (* , * =)</li>
+<li>division and inplace division (/, /=)</li>
+</ul>
+</dd>
+</dl>
+<p>These are all term-to-term operations.
+Hence, the argument has two be a two-elements iterable.
+They all return an xytuple.</p>
+<p>Also, the absolute value operation is supported (abs).
+It returned a float corrsponding to the norm of the coordinates.</p>
+<p>To apply a specific function on both coordinates, use the method map.
+It returns an xytuple.</p>
+<dl class="method">
+<dt id="mvctools.common.xytuple.__abs__">
+<tt class="descname">__abs__</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__abs__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a float, the norm of the coordinates.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__add__">
+<tt class="descname">__add__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__add__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__div__">
+<tt class="descname">__div__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__div__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide by a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__iadd__">
+<tt class="descname">__iadd__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__iadd__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__idiv__">
+<tt class="descname">__idiv__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__idiv__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Divide by a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__imul__">
+<tt class="descname">__imul__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__imul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Product by a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__isub__">
+<tt class="descname">__isub__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__isub__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substract a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__mul__">
+<tt class="descname">__mul__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__mul__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Product by a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__neg__">
+<tt class="descname">__neg__</tt><big>(</big><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__neg__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the additive inverse of an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.__sub__">
+<tt class="descname">__sub__</tt><big>(</big><em>it</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.__sub__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substract a 2-elements iterable and return an xytuple.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="mvctools.common.xytuple.map">
+<tt class="descname">map</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#mvctools.common.xytuple.map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map the coordinates with the given function a return an xytuple.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to pygame-mvctools documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="control.html"
+                        title="next chapter">Control documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/common.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="control.html" title="Control documentation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pygame-mvctools documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">pygame-mvctools 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.1.
+    </div>
+  </body>
+</html>
