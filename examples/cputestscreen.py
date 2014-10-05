@@ -23,7 +23,7 @@ class LoadChoiceModel(ChoiceModel):
         ChoiceModel.init(self, *args, **kwargs)
         self.current_load = 0
 
-    def register_validation(self):
+    def validate(self):
         self.current_load = self.sleep_dct[self.current]
 
     def update(self):

@@ -13,7 +13,7 @@ class EntryModel(BaseEntryModel):
         super(EntryModel, self).init(pos, text)
         self.state = state
 
-    def register_validation(self):
+    def validate(self):
         if self.state:
             self.control.push_current_state()
         self.control.register_next_state(self.state)
@@ -39,11 +39,17 @@ class ChoiceModel(BaseEntryModel):
     def current(self):
         return self.cursor.get()
 
-    def register_left(self):
+    def register_click(self):
+        self.shift_right()
+        self.validate()
+
+    def shift_left(self):
         self.cursor.inc(-1)
 
-    def register_right(self):
+    def shift_right(self):
         self.cursor.inc(+1)
+
+
     
 
 class ChoiceSprite(EntrySprite):

@@ -70,7 +70,7 @@ class BaseController:
             SystemExit: when the given event is a quit event
         """
         if self.is_quit_event(event):
-                raise SystemExit
+            raise SystemExit
         return self.handle_event(event)
 
     def handle_event(self, event):
@@ -127,3 +127,14 @@ class BaseController:
                        event.mod == pg.KMOD_LALT)
         pgquit_event = (event.type == pg.QUIT)
         return altf4_event or pgquit_event
+
+    def get_model_at(self, pos):
+        """Get the model corrsponding to a given position.
+
+        Args:
+            pos (tuple): the position on screen
+        """
+        try:
+            return self.state.view.get_models_at(pos)[0]
+        except IndexError:
+            return None

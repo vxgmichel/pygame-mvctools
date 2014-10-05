@@ -51,6 +51,12 @@ class BaseMenuController(BaseController):
         if event.type == pg.JOYAXISMOTION:
             key = (event.axis, self.axis_position(event.value))
             self.register(self.axis_dct, key, "axis")
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            model = self.get_model_at(event.pos)
+            if model: model.register("click")
+        if event.type == pg.MOUSEMOTION:
+            model = self.get_model_at(event.pos)
+            if model: model.register("hover")
 
     def axis_position(self, arg):
         return cmp(arg, 0) if abs(arg) >= self.axis_threshold else 0
@@ -78,12 +84,23 @@ class BaseEntryModel(BaseModel):
     def selected(self):
         return self is self.parent.cursor.get()
 
-    def register_validation(self):
-        if self.selected:
-            self.validate()
+    def select(self):
+        self.parent.cursor.cursor = self.pos
 
     def validate(self):
         pass
+
+    def shift_left(self):
+        pass
+
+    def shift_right(self):
+        pass
+
+    def register_hover(self):
+        self.select()
+
+    def register_click(self):
+        self.validate()
         
 
 # Main Model
@@ -112,16 +129,16 @@ class BaseMenuModel(BaseModel):
         self.cursor.inc(1)
 
     def register_left(self):
-        self.cursor.get().register_left()
+        self.cursor.get().shift_left()
 
     def register_right(self):
-        self.cursor.get().register_right()
+        self.cursor.get().shift_right()
 
     def register_validation(self):
-        self.cursor.get().register_validation()
+        self.cursor.get().validate()
 
     def register_back(self):
-        self.cursor[-1].register_validation()
+        self.cursor[-1].validate()
 
 
 # Main Sprite

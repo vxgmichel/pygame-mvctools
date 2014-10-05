@@ -17,7 +17,7 @@ class SettingChoiceModel(ChoiceModel):
         try: self.cursor.set(self.cursor.index(string.lower()))
         except: print(string)
         
-    def register_validation(self):
+    def validate(self):
         attr = self.text.lower()
         setattr(self.control.settings, attr, self.current)
 

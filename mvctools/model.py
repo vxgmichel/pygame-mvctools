@@ -152,17 +152,16 @@ class BaseModel(object):
     def __del__(self):
         """Unregister itself."""
         self.parent._unregister_child(self)
+        
+    def register(self, action, *args, **kwargs):
+        """Register an action.
 
-    def __getattr__(self, attr):
-        """Handle the registering functions.
-
-        If the model doesn't have its own corresponding handler,
-        it will recursively look into its children.
-
+        Args:
+            action (str): name of the action to register
+            args (list): arguments to pass to the model method
+            kwargs (dict): keywords arguments to pass to the model method
         Return:
-            func: a callable that recursively look into the children
-        Raises:
-            AttributeError: in regular cases.
+            bool: True to stop the current state, False otherwise.
 
         Warning: no exception is raised if no handler is found.
         It will be silentely ignored and False will be returned
@@ -170,20 +169,12 @@ class BaseModel(object):
         This choice has been made on purpose, considering the controller
         might register more types of actions than the model can handle.
         """
-        if not attr.startswith("register_"):
-            raise AttributeError(attr)
-        def register_func(*args, **kwargs):
-            """Recursively call the register function on the children.
-
-            Args:
-                args (list): arguments to pass to the model method
-                kwargs (dict): keywords arguments to pass to the model method
-            Return:
-                bool: True to stop the current state, False otherwise.
-            """
-            return any(getattr(child, attr)(*args, **kwargs)
-                       for child in self.children.values())
-        return register_func
+        method_name = "_".join(("register", action.lower()))
+        # Ignore if no corresponding method
+        if not hasattr(self, method_name):
+            return False
+        # Call the corresponding method
+        return getattr(self, method_name)(*args, **kwargs)
 
 
 # Timer model class

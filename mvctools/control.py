@@ -164,4 +164,3 @@ class BaseControl:
         pygame.quit()
         
 
-

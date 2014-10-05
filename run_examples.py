@@ -17,13 +17,9 @@ class Example(BaseControl):
     ressource_dir = "resource"
     window_title = "Example v1.0"
 
-    def pre_run(self) :
-        """Hide the mouse"""
-        pygame.mouse.set_visible(False)
-
 
 # Set the links between the different states
-Example.first_state = MenuState
+Example.first_state = LoadingState
 
 LoadingState.next_state = MenuState
 

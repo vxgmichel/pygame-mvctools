@@ -62,7 +62,9 @@ class BaseView(object):
     def register_sprite_class(cls, obj_cls, sprite_cls):
         cls.sprite_class_dct[obj_cls] = sprite_cls
         
-
+    def get_models_at(self, pos):
+        return [sprite.model
+                for sprite in reversed(self.group.get_sprites_at(pos))]
 
 
 
