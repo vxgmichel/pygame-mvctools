@@ -141,18 +141,6 @@ class BaseModel(object):
         value = (self.key, self)
         return chain([value], *iterators)
 
-    def __iter__(self):
-        """Iterator support.
-
-        Return:
-            list: the direct children.
-        """
-        return self.children.values()
-
-    def __del__(self):
-        """Unregister itself."""
-        self.parent._unregister_child(self)
-        
     def register(self, action, *args, **kwargs):
         """Register an action.
 
@@ -164,7 +152,7 @@ class BaseModel(object):
             bool: True to stop the current state, False otherwise.
 
         Warning: no exception is raised if no handler is found.
-        It will be silentely ignored and False will be returned
+        It will be silently ignored and False will be returned
 
         This choice has been made on purpose, considering the controller
         might register more types of actions than the model can handle.
@@ -175,6 +163,18 @@ class BaseModel(object):
             return False
         # Call the corresponding method
         return getattr(self, method_name)(*args, **kwargs)
+
+    def __iter__(self):
+        """Iterator support.
+
+        Return:
+            list: the direct children.
+        """
+        return self.children.values()
+
+    def __del__(self):
+        """Unregister itself."""
+        self.parent._unregister_child(self)
 
 
 # Timer model class

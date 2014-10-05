@@ -1,4 +1,4 @@
-from mvctools import BaseController, BaseModel, BaseView, BaseState
+from mvctools import MouseController, BaseModel, BaseView, BaseState
 from mvctools import cursoredlist
 from mvctools.utils.renderer import RendererSprite
 from collections import defaultdict
@@ -6,7 +6,7 @@ import pygame as pg
 
 # Controller
 
-class BaseMenuController(BaseController):
+class BaseMenuController(MouseController):
 
     axis_threshold = 0.5
 
@@ -42,6 +42,8 @@ class BaseMenuController(BaseController):
             pg.joystick.Joystick(i).init() 
 
     def handle_event(self, event):
+        if super(BaseMenuController, self).handle_event(event):
+            return True
         if event.type == pg.KEYDOWN:
             self.register(self.key_dct, event.key)
         if event.type == pg.JOYHATMOTION:
@@ -51,12 +53,6 @@ class BaseMenuController(BaseController):
         if event.type == pg.JOYAXISMOTION:
             key = (event.axis, self.axis_position(event.value))
             self.register(self.axis_dct, key, "axis")
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            model = self.get_model_at(event.pos)
-            if model: model.register("click")
-        if event.type == pg.MOUSEMOTION:
-            model = self.get_model_at(event.pos)
-            if model: model.register("hover")
 
     def axis_position(self, arg):
         return cmp(arg, 0) if abs(arg) >= self.axis_threshold else 0

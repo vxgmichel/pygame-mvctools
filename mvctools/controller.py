@@ -4,7 +4,7 @@
 import pygame as pg
 
 # Base controller class
-class BaseController:
+class BaseController(object):
     """ Base controller class for the MVC pattern implementation.
 
     Shouldn't be instanciated manually but
@@ -128,13 +128,62 @@ class BaseController:
         pgquit_event = (event.type == pg.QUIT)
         return altf4_event or pgquit_event
 
-    def get_model_at(self, pos):
-        """Get the model corrsponding to a given position.
+
+class MouseAction:
+    """Enumeration of mouse actions."""
+    #: When the left button is released on a sprite
+    CLICK = "click"
+    #: When the middle button is released on a sprite
+    MIDDLECLICK = "middleclick"
+    #: When the right button is released on a sprite
+    RIGHTCLICK = "rightclick"
+    #: When the wheel is rolled up on a sprite
+    WHEELUP = "wheelup"
+    #: When the wheel is rolled down on a sprite
+    WHEELDOWN = "wheeldown"
+    #: When a sprite is hovered
+    HOVER = "hover"
+
+    
+class MouseController(BaseController):
+    """ Base controller class processing mouse events.
+
+    All the actions in MouseAction are handled here.
+    """
+
+    mouse_button_mapping = {1: MouseAction.CLICK,
+                            2: MouseAction.MIDDLECLICK,
+                            3: MouseAction.RIGHTCLICK,
+                            4: MouseAction.WHEELUP,
+                            5: MouseAction.WHEELDOWN}
+    
+    def handle_event(self, event):
+        """Handle button up and motion mouse events."""
+        if event.type == pg.MOUSEBUTTONUP:
+            action = self.mouse_button_mapping[event.button]
+            model = self.get_model_at(event.pos)
+            if model: return model.register(action)
+        if event.type == pg.MOUSEMOTION:
+            model = self.get_model_at(event.pos)
+            if model: return model.register(MouseAction.HOVER)
+
+    def get_models_at(self, pos):
+        """Get the list of models corresponding to a given position.
 
         Args:
             pos (tuple): the position on screen
+        Returns:
+            list: models from top to bottom
         """
-        try:
-            return self.state.view.get_models_at(pos)[0]
-        except IndexError:
-            return None
+        return self.state.view.get_models_at(pos)
+
+    def get_model_at(self, pos):
+        """Get the model corresponding to a given position.
+
+        Args:
+            pos (tuple): the position on screen
+        Returns:
+            BaseModel: topmost model or None if doesn't exist
+        """
+        try: return self.get_models_at(pos)[0]
+        except IndexError: return None
