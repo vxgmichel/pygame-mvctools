@@ -1,7 +1,10 @@
 """Module containing the gamedata base class."""
 
-from mvctools.model import property_from_gamedata
+# Imports
+from mvctools.property import from_gamedata
 
+
+# Gamedata base class
 class BaseGamedata(object):
     """Gamedata base class.
 

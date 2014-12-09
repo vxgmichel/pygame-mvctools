@@ -1,12 +1,13 @@
 import pygame as pg
 from pygame.sprite import DirtySprite
 from pygame import Rect, Surface, transform
-from mvctools.common import xytuple, cachedict
+from mvctools.common import xytuple, cachedict, scale_dirty
+from mvctools import BaseView
 
 
 class AutoSprite(DirtySprite):
 
-    size_ratio = None
+    has_view = False
 
     def __init__(self, parent, *args, **kwargs):
         super(AutoSprite, self).__init__()
@@ -22,8 +23,11 @@ class AutoSprite(DirtySprite):
             parent.register_child(self)
             self._layer = parent.layer
         # Group handling
+        self.dirty_rects = None
         self.group = parent.group
         self.group.add(self)
+        # State
+        self.state = self.parent.state
         # Model
         self.model = model if model else parent.model
         # Resource
@@ -44,8 +48,17 @@ class AutoSprite(DirtySprite):
         self.layer = self.get_layer()
 
     def kill(self):
-        [child.kill() for child in self.children]
+        for child in self.children:
+            child.kill()
+        self.group = None
         super(AutoSprite, self).kill()
+
+    def delete(self):
+        self.kill()
+        for child in self.children:
+            child.delete()
+        self.children = []
+        self.parent = None
 
     def register_child(self, child):
         self.children.append(child)
@@ -62,7 +75,7 @@ class AutoSprite(DirtySprite):
 
     def get_rect(self):
         return self.rect
-    
+
     def get_image(self):
         return self.image
 
@@ -75,7 +88,7 @@ class AutoSprite(DirtySprite):
         self.dirty = self.dirty if self.dirty else 1
 
     # Conveniance methods
-    
+
     def build_animation(self, resource, timer=None,
                         inf=None, sup=None, looping=True, resize=False):
         if timer is None:
@@ -86,13 +99,14 @@ class AutoSprite(DirtySprite):
     def scale_resource(self, resource, name, size=None):
         size = self.size if size is None else None
         return resource.getfile(name, size)
-    
+
     @property
     def size(self):
-        if not self.size_ratio:
-            return xytuple(*self.image.get_size())
-        return (self.settings.size * self.size_ratio).map(int)
-            
+        return xytuple(*self.image.get_size())
+
+    @property
+    def screen_size(self):
+        return self.parent.screen_size
 
     # Layer property
 
@@ -107,7 +121,7 @@ class AutoSprite(DirtySprite):
         if self._layer != layer:
             self._layer = layer
             self.group.change_layer(self, layer)
-            
+
     @layer.deleter
     def layer(self):
         self.set_layer(-1)
@@ -116,7 +130,7 @@ class AutoSprite(DirtySprite):
         layer = self.layer
         del self.layer
         self.layer = layer
-    
+
     # Image property
     @property
     def image(self):
@@ -158,6 +172,73 @@ class AutoSprite(DirtySprite):
     def rect(self):
         del self._rect
 
+    # Visible property
+
+    @property
+    def visible(self):
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible):
+        visible = bool(visible)
+        if self.visible != visible:
+            self._visible = visible
+            self.set_dirty()
+
+    @visible.deleter
+    def visible(self):
+        del self._visible
+
+class ViewSprite(AutoSprite):
+
+    view_cls = BaseView
+    has_view = True
+
+    def init(self, view_cls=None):
+        if view_cls:
+            self.view_cls = view_cls
+        self.view = self.view_cls(self, self.model)
+
+    def transform(self, screen, dirty):
+        screen_size = screen.get_size()
+        if screen_size == self.size:
+            return screen, dirty
+        if all(screen.get_size()):
+            if self.image.get_size() != self.size:
+                return self.resource.scale(screen, self.size), None
+            dirty = scale_dirty(screen, self.image, dirty,
+                                self.resource.scale)
+            return self.image, dirty
+        image = Surface(self.size, screen.get_flags())
+        return image, None
+
+    def get_image(self):
+        # Get screen
+        screen, dirty = self.view._update()
+        # Transform
+        image, dirty = self.transform(screen, dirty)
+        # Dirtyness
+        self.dirty_rects = dirty
+        # Return
+        return image
+
+    @property
+    def size(self):
+        return self.view.screen_size
+
+    @property
+    def transparent(self):
+        return self.view.transparent
+
+    def get_surface(self):
+        msg = "no size or surface to provide"
+        raise NotImplementedError(msg)
+
+    def delete(self):
+        self.view.delete()
+        AutoSprite.delete(self)
+
+
 
 class Animation(object):
 
@@ -167,7 +248,7 @@ class Animation(object):
         self.resource = resource
         self.size = size
         self.timer = timer
-        start, stop = timer.get_interval()
+        start, stop = timer.interval
         self.inf = start if inf is None else inf
         self.sup = stop if sup is None else sup
         self.looping = looping
@@ -204,7 +285,7 @@ class Animation(object):
 
 class UpgradingMetaClass(type):
     def __new__(metacls, name, bases, attrs):
-        cls = type(name, bases, attrs)  
+        cls = type(name, bases, attrs)
         for name in dir(cls):
             attr = getattr(cls, name)
             if type(attr) in cls.upgrade_dict:
@@ -213,8 +294,8 @@ class UpgradingMetaClass(type):
                     func = func.__func__
                 setattr(cls, name, func(attr))
         return cls
-        
-    
+
+
 class Autorect(Rect):
 
     def __init__(self, *args, **kwargs):
@@ -228,7 +309,7 @@ class Autorect(Rect):
         self.sprites.append(sprite)
 
     __metaclass__ = UpgradingMetaClass
-    
+
     @staticmethod
     def upgrade_descriptor(descriptor):
         def setter(obj, value):

@@ -18,8 +18,15 @@ def walk(path):
 # Handler
 
 class ResourceHandler:
+
+    scale = pygame.transform.scale
     
     def __init__(self, directory):
+        # Check directory
+        directory = os.path.normpath(directory)
+        if not os.path.isdir(directory):
+            raise IOError("'{0}' directory not found".format(directory))
+        # Walk directory
         self._dir, self._subdirs, self._files = next(walk(directory))
         self._files = [os.path.splitext(f)
                            for f in self._files
@@ -27,6 +34,7 @@ class ResourceHandler:
         self._subdir_dict = {subdir: ResourceHandler(self._join(subdir))
                              for subdir in self._subdirs}
         self._resource_dict = defaultdict(dict)
+        # Sort files and dirs
         self._subdirs.sort()
         self._files.sort()
 
@@ -118,9 +126,9 @@ class ResourceHandler:
         # Look for an already loaded resource
         if attr in self._resource_dict:
             if formatting is None:
-                del(self._resource_dict[name])
+                del self._resource_dict[name]
             else:
-                del(self._resource_dict[name][formatting])
+                del self._resource_dict[name][formatting]
         # Look for valid filenames
         valid_files = (r+e for r, e in self._files if name==r)
         return next(valid_files, None)
@@ -209,9 +217,6 @@ class ResourceHandler:
     def __iter__(self):
         return self.iterator()
 
-    def __del__(self):
-        self.unload()
-
     def __str__(self):
         return "RessourceHandler : {}".format(self._dir)
 
@@ -230,7 +235,7 @@ class ResourceHandler:
         if size == raw_image.get_size():
             return raw_image
         # Scale image
-        return pygame.transform.smoothscale(raw_image, size)
+        return self.scale(raw_image, size)
 
     def load_font(self, name, size=72):
         if not pygame.font.get_init():

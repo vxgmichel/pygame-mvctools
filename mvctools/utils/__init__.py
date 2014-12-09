@@ -1,10 +1,10 @@
 """
 This module gathers all non-generic components of mvctools.
-They provide a basis for renderer and menu handling
+They provide a basis for multiline text renderering, menu handling
+and camera features.
 """
-from mvctools.utils.renderer import RendererSprite
-from mvctools.utils.menu import BaseMenuController, BaseMenuModel
-from mvctools.utils.menu import BaseMenuSprite, BaseMenuView, BaseMenuState
-from mvctools.utils.menu import BaseEntryModel, BaseEntrySprite
 
-
+from mvctools.utils.text import TextSprite
+from mvctools.utils.camera import CameraModel, CameraSprite
+from mvctools.utils.mapping import PlayerController, TwoPlayersController
+from mvctools.utils.mapping import PlayerAction

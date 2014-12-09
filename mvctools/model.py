@@ -38,6 +38,8 @@ class BaseModel(object):
      - **self.isroot**: True if it is the main model
     """
 
+    time_speed = 1.0
+
     def __init__(self, parent, *args, **kargs):
         """Initialize the model with its parent and register itself.
 
@@ -75,19 +77,6 @@ class BaseModel(object):
         """
         self.lifetime = Timer(self).start()
 
-    def _reload(self):
-        """Reload itself and its children.
-
-        Called when the state is reloaded."""
-        self.reload()
-        [child._reload() for child in self.children.values()]
-
-    def reload(self):
-        """Empty method to override if needed.
-
-        Called when the state is reloaded.
-        """
-
     def _register_child(self, child):
         """Register a new child.
 
@@ -118,28 +107,52 @@ class BaseModel(object):
         Return:
             bool: True to stop the current state, False otherwise.
         """
-        return self.update() or self._update_children()
+        return self.update() or self._update_children() or self.post_update()
 
     def update(self):
         """Empty method to override.
 
-        Called at each tick of the state.
+        Called at each tick of the state before updating the children.
 
         Return:
             bool: True to stop the current state, False otherwise.
         """
         pass
 
-    def get_model_dct(self):
-        """Recursively get the dictionnary of all models with
+    def post_update(self):
+        """Empty method to override.
+
+        Called at each tick of the state after updating the children
+
+        Return:
+            bool: True to stop the current state, False otherwise.
+        """
+        pass
+
+    def gen_model_dct(self):
+        """Recursively generate the dictionnary of all models with
         their associated key (including itself).
 
         Return:
             dict: the (key, model) dictionnary
         """
-        iterators = [child.get_model_dct() for child in self.children.values()]
-        value = (self.key, self)
-        return chain([value], *iterators)
+        yield self.key, self
+        for child in self.children.values():
+            for value in child.gen_model_dct():
+                yield value
+
+    def get_children(self):
+        """Return the list of the current children model."""
+        return self.children.values()
+
+    def get_image(self):
+        """Get the current image.
+
+        Warning: this breaks the model independance.
+        Use with care.
+        """
+        sprite = self.state.view.get_sprite_from(self)
+        return sprite.get_image() if sprite else None
 
     def register(self, action, *args, **kwargs):
         """Register an action.
@@ -164,6 +177,11 @@ class BaseModel(object):
         # Call the corresponding method
         return getattr(self, method_name)(*args, **kwargs)
 
+    @property
+    def delta(self):
+        """Time difference with last update."""
+        return self.time_speed * self.parent.delta
+
     def __iter__(self):
         """Iterator support.
 
@@ -172,9 +190,13 @@ class BaseModel(object):
         """
         return self.children.values()
 
-    def __del__(self):
-        """Unregister itself."""
+    def delete(self):
+        """Delete the model."""
         self.parent._unregister_child(self)
+        for child in self.children.values():
+            child.delete()
+        self.children.clear()
+        self.parent = None
 
 
 # Timer model class
@@ -217,23 +239,27 @@ class Timer(BaseModel):
         self._ratio = 0.0
         self._current_value = float(start)
         self._next_increment = 0.0
-
-    def get_interval(self):
+        
+    @property
+    def interval(self):
         """Return the (start, stop) interval as a tuple."""
         return self._start, self._stop
 
+    @property
     def is_set(self):
         """Return True if the timer reached its stop value.
         Return False otherwise.
         """
         return self._current_value == self._stop
 
+    @property
     def is_reset(self):
         """Return True if the timer reached its start value.
         Return False otherwise.
         """
         return self._current_value == self._start
 
+    @property
     def is_paused(self):
         """Return True if the timer is paused, False otherwise."""
         return self._ratio == 0
@@ -325,53 +351,4 @@ class Timer(BaseModel):
             if callable(self._callback):
                 self._callback(self)
         # Prepare next increment
-        delta = 1.0/self.state.current_fps
-        self._next_increment = delta*self._ratio
-
-
-# Property from game data
-def property_from_gamedata(name):
-    """Build a property from an attribute name in gamedata.
-
-    Here is the behavior of this property:
-     - If a read access is made, the gamedata attribute is returned.
-     - If that attribute doesn't exist, the decorated function is used
-       as a factory, the attribute is set and the value returned.
-     - If a write access is made, the dataattribute is simply set.
-     - If a deletion is made, the attribute is cleared from the gamedata.
-
-    The main purpose is simplify the communication between the model
-    and the gamedata.
-
-    Example: ::
-
-        @property_from_gamedata("player_score"):
-        def score(self):
-            return 0
-    """
-    def wrapper(method):
-        """Build a gamedata property from a default method."""
-        # Setter
-        def fset(self, value):
-            """Setter for the gamedata property."""
-            setattr(self.gamedata, name, value)
-        # Getter
-        def fget(self):
-            """Getter for the gamedata property."""
-            try:
-                return getattr(self.gamedata, name)
-            except AttributeError:
-                value = method(self)
-                fset(self, value)
-                return value
-        # Deletter
-        def fdel(self):
-            """Deletter for the gamedata property."""
-            delattr(self.gamedata, name)
-        doc = method.__doc__
-        return property(fget, fset, fdel, doc)
-    return wrapper
-
-
-
-
+        self._next_increment = self.delta*self._ratio
