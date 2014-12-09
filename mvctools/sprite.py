@@ -108,6 +108,14 @@ class AutoSprite(DirtySprite):
     def screen_size(self):
         return self.parent.screen_size
 
+    @property
+    def screen_width(self):
+        return self.parent.screen_width
+
+    @property
+    def screen_height(self):
+        return self.parent.screen_height
+
     # Layer property
 
     @property

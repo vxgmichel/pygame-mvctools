@@ -21,7 +21,7 @@ class TileSprite(AutoSprite):
         self.basesize = self.compute_basesize()
         # Shifting
         center = self.model.parent.max_coordinate * (0.5,0.5)
-        shift = self.settings.size/(2,2) - self.isoconvert(center)
+        shift = self.screen_size/(2,2) - self.isoconvert(center)
         shift += (0, self.basesize.y * 0.5)
         self.shift = shift.map(round).map(int)
         # Layer
@@ -68,9 +68,9 @@ class TileSprite(AutoSprite):
         return float(raw.get_height()) / raw.get_width()
 
     def compute_basesize(self):
-        width = float(self.settings.width)/self.max_tile_x
+        width = float(self.screen_width)/self.max_tile_x
         coresponding_height = width / (3**0.5)
-        height = float(self.settings.height)/self.max_tile_y
+        height = float(self.screen_height)/self.max_tile_y
         if height > coresponding_height:
             return xytuple(width, coresponding_height)
         coresponding_width = height * (3**0.5)

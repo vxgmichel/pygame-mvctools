@@ -1,18 +1,26 @@
 from mvctools import BaseModel, BaseController, BaseView
-from mvctools import BaseState, AutoSprite
-from mvctools.utils import RendererSprite
+from mvctools import BaseState, AutoSprite, Timer
+from mvctools.utils import TextSprite
 
 # Model
 
 class LoadingModel(BaseModel):
 
-    text = "Loading"
+    basetext = "Loading"
+    period = 1
+    length = 5
 
     def init(self):
         super(LoadingModel, self).init()
         self.done = False
         self.control.resource.load(threaded=True, callback=self.callback)
-        
+        self.timer = Timer(self, stop=self.period, periodic=True).start()
+
+    @property
+    def text(self):
+        nb_dots = int(self.length * self.timer.get(normalized=True))
+        return self.basetext + "." * nb_dots
+    
     def update(self):
         if self.done:
             self.control.register_next_state(self.state.next_state)
@@ -23,41 +31,26 @@ class LoadingModel(BaseModel):
 
 # Main sprite class
 
-class LoadingSprite(RendererSprite):
+class LoadingSprite(TextSprite):
     
     font_ratio = 0.07
     font_name = "visitor2"
-    font_color = "black"
-    position_ratio = (0.85, 0.95)
-    
-    def init(self):
-        RendererSprite.init(self)
-        self.image = self.renderer(self.model.text)
-        self.rect = self.image.get_rect(center=self.center)
-        self.logo = LoadingLogoSprite(self)
+    color = "black"
+    reference = "midleft"
+    position_ratio = (0.8, 0.95)
 
     @property
-    def center(self):
-        return (self.settings.size * self.position_ratio).map(int)
+    def text(self):
+        return self.model.text
 
+    @property
+    def font_size(self):
+        return int(self.screen_height * self.font_ratio)
 
-# Secondary sprite class
+    @property
+    def pos(self):
+        return (self.screen_size * self.position_ratio).map(int)
 
-class LoadingLogoSprite(AutoSprite):
-
-    nb_dot = 5
-    period = 2
-    
-    def init(self):
-        self.renderer = self.parent.renderer
-        self.images = [self.renderer("."*i) for i in xrange(1, self.nb_dot+1)]
-        self.animation = self.build_animation(self.images, sup=self.period)
-
-    def get_image(self):
-        return self.animation.get()
-
-    def get_rect(self):
-        return self.image.get_rect(topleft=self.parent.rect.topright)
 
 # View class
 

@@ -1,5 +1,5 @@
 from mvctools import NextStateException, BaseModel, Timer
-from mvctools import xytuple, cursoredlist, property_from_gamedata
+from mvctools import xytuple, cursoredlist, from_gamedata
 from collections import defaultdict
 from functools import partial
 
@@ -120,15 +120,15 @@ class PlayerModel(TileModel):
 
     @property
     def is_moving(self):
-        return not self.moving_timer.is_paused()
+        return not self.moving_timer.is_paused
 
     @property
     def is_transforming(self):
-        return not self.transform_timer.is_paused()
+        return not self.transform_timer.is_paused
 
     @property
     def is_dying(self):
-        return not self.dying_timer.is_paused()
+        return not self.dying_timer.is_paused
 
     @property
     def is_busy(self):
@@ -137,7 +137,7 @@ class PlayerModel(TileModel):
     # Timer handling
 
     def transform_callback(self, timer):
-        if timer.is_set():
+        if timer.is_set:
             self.moving_timer.reset().start()
         else:
             self.timer.reset().start()
@@ -198,7 +198,7 @@ class GoalModel(TileModel):
         self.timer = Timer(self, stop=self.period, callback=self.callback)
 
     def callback(self, timer):
-        self.activated = timer.is_set()
+        self.activated = timer.is_set
         
 
 class BlackHoleModel(TileModel):
@@ -223,7 +223,7 @@ class BoardModel(BaseModel):
 
     # Initialize
     
-    @property_from_gamedata("board_level")
+    @from_gamedata("board_level")
     def level(self):
         return 0
 

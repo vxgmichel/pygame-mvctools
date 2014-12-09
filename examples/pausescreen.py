@@ -1,6 +1,6 @@
 from mvctools import BaseState, BaseModel, BaseController, BaseView
 from mvctools import AutoSprite, NextStateException
-from mvctools.utils import RendererSprite
+from mvctools.utils import TextSprite
 
 from pygame import Surface
 import pygame as pg
@@ -27,21 +27,24 @@ class PauseModel(BaseModel):
 
 # Sprite classes
 
-class PauseSprite(RendererSprite):
+class PauseSprite(TextSprite):
     
     font_ratio = 0.05
     font_name = "visitor2"
-    font_color = "white"
+    color = "white"
     position_ratio = (0.5, 0.5)
-  
-    def init(self):
-        RendererSprite.init(self)
-        self.image = self.renderer(self.model.text)
-        self.rect = self.image.get_rect(center=self.center)
 
     @property
-    def center(self):
-        return (self.settings.size * self.position_ratio).map(int)
+    def text(self):
+        return self.model.text
+
+    @property
+    def font_size(self):
+        return int(self.screen_height * self.font_ratio)
+
+    @property
+    def pos(self):
+        return (self.screen_size * self.position_ratio).map(int)
 
 # View class
 
@@ -49,7 +52,7 @@ class PauseView(BaseView):
     shade_ratio = 0.5
     sprite_class_dct = {PauseModel:PauseSprite}
 
-    def get_background(self):
+    def create_background(self):
         bgd = self.screen.copy()
         color = (255*self.shade_ratio,)*3
         bgd.fill(color, special_flags=pg.BLEND_MULT)

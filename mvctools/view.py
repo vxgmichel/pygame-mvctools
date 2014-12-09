@@ -46,14 +46,14 @@ class BaseView(object):
 
     def update_screen(self, force=False):
         if force or self.screen is None:
-            self.screen = self.get_screen()
-            self.background = self.get_background()
+            self.screen = self.create_screen()
+            self.background = self.create_background()
             self.group.reset_update()
 
     def reset_screen(self):
         self.screen = None
 
-    def get_screen(self):
+    def create_screen(self):
         size = self.size
         if size is None:
             data = self.parent.get_surface()
@@ -64,10 +64,10 @@ class BaseView(object):
             return Surface(size)
         return Surface(size, pg.SRCALPHA)
 
-    def get_background(self):
+    def create_background(self):
         image = self.resource.get(self.bgd_image) if self.bgd_image else None
-        return self.build_background(image, self.bgd_color, self.size,
-                                     self.transparent)
+        return self.build_background(image, self.bgd_color, self.screen_size,
+                                     self.transparent, self.resource.scale)
 
     def _update(self):
         # Create screen
@@ -146,16 +146,26 @@ class BaseView(object):
     @property
     def screen_size(self):
         if self.size is None:
-            return self.screen.get_size()
-        return self.size
+            return xytuple(self.screen.get_size())
+        return xytuple(self.size)
+
+    @property
+    def screen_width(self):
+        return self.screen_size.x
+
+    @property
+    def screen_height(self):
+        return self.screen_size.y
 
     @property
     def transparent(self):
         return self.bgd_color is None or Color(self.bgd_color)[3] != 255
 
-    def build_background(self, image=None, color=None, size=None, transparent=False):
+    @staticmethod
+    def build_background(image=None, color=None, size=None,
+                         transparent=False, scale=None):
         # No background
-        if image is None and color is None:
+        if size is None or image is None and color is None:
             return None
         # Get base
         if transparent:
@@ -167,8 +177,8 @@ class BaseView(object):
             color = Color(color)
             bgd.fill(color)
         # Blit image
-        if image is not None:
-            scaled = self.resource.scale(image, self.size)
+        if image is not None and scale is not None:
+            scaled = scale(image, size)
             bgd.blit(scaled, scaled.get_rect())
         return bgd
 

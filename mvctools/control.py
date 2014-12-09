@@ -187,10 +187,12 @@ class BaseControl(object):
     @property
     def root_dir(self):
         """Get the parent directory of the top-level package."""
-        if not self.__module__:
+        try:
+            root_module = __import__(self.__module__.split(".")[0])
+            path = root_module.__path__[0]
+        except (AttributeError, IndexError, ImportError):
             return ""
-        root_module = __import__(self.__module__.split(".")[0])
-        return os.path.join(root_module.__path__[0], os.pardir)
+        return os.path.join(path, os.pardir)
 
     @classmethod
     def setup(cls, **kwargs):
