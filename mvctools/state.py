@@ -63,8 +63,7 @@ class BaseState(object):
         screen, dirty = self.view._update()
         # Scale
         if actual_screen != screen:
-            dirty = scale_dirty(screen, actual_screen, dirty,
-                                self.control.resource.scale)
+            dirty = scale_dirty(screen, actual_screen, dirty)
         # Update
         pygame.display.update(dirty)
 

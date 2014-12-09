@@ -7,7 +7,7 @@ from fractions import gcd
 from functools import wraps
 from weakref import WeakKeyDictionary
 from collections import namedtuple, defaultdict
-from pygame import Color, Rect
+from pygame import Color, Rect, transform
 
 
 # XY namedtuple
@@ -195,17 +195,17 @@ class cursoredlist(list):
             self.cursor = index % len(self)
 
 
-def scale_dirty(source, dest, dirty, scale):
+def scale_dirty(source, dest, dirty):
     if not all(source.get_size()):
         return
     if dirty is None:
-        scale(source, dest.get_size(), dest)
+        transform.scale(source, dest.get_size(), dest)
         return [dest.get_rect()]
     dest_rects = scale_rects(dirty, source.get_rect(), dest.get_rect())
     for source_rect, dest_rect in zip(dirty, dest_rects):
         subsource = source.subsurface(source_rect)
         subdest = dest.subsurface(dest_rect)
-        scale(subsource, dest_rect.size, subdest)
+        transform.scale(subsource, dest_rect.size, subdest)
     return dest_rects
 
 
@@ -225,8 +225,8 @@ def scale_rects(rects, source, dest):
     rects[:] = source_lst
     # Get dest recangles
     for rect in source_lst:
-        topleft = size_ratios * rect.topleft
-        bottomright = size_ratios * rect.bottomright
+        topleft = (size_ratios * rect.topleft).map(round)
+        bottomright = (size_ratios * rect.bottomright).map(round)
         dest_lst.append(Rect(topleft, bottomright - topleft))
     # Return
     return dest_lst

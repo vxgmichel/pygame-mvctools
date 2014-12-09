@@ -209,14 +209,18 @@ class ViewSprite(AutoSprite):
 
     def transform(self, screen, dirty):
         screen_size = screen.get_size()
+        # No scaling needed
         if screen_size == self.size:
             return screen, dirty
+        # Scalable screen
         if all(screen.get_size()):
+            # Scale all
             if self.image.get_size() != self.size:
-                return self.resource.scale(screen, self.size), None
-            dirty = scale_dirty(screen, self.image, dirty,
-                                self.resource.scale)
+                dirty = None
+            # Scale dirty
+            dirty = scale_dirty(screen, self.image, dirty)
             return self.image, dirty
+        # Not scalable screen
         image = Surface(self.size, screen.get_flags())
         return image, None
 
