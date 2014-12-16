@@ -129,9 +129,20 @@ class BaseView(object):
     def register_sprite_class(cls, obj_cls, sprite_cls):
         cls.sprite_class_dct[obj_cls] = sprite_cls
 
-    def get_models_at(self, pos):
-        return [sprite.model
-                for sprite in reversed(self.group.get_sprites_at(pos))]
+    def gen_sprites_at(self, pos):
+        for sprite in reversed(self.group.get_sprites_at(pos)):
+            if sprite.has_view:
+                for sub in sprite.gen_sprites_at(pos):
+                    yield sub
+            yield sprite
+
+    def get_models_at(self):
+        models = []
+        for sprite in self.gen_sprites_at(pos):
+            if sprite.model not in models:
+                models.append(sprite.model)
+        return models
+
 
     def get_sprite_from(self, model):
         sprite = self.create_sprite(model)

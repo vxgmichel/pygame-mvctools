@@ -234,6 +234,15 @@ class ViewSprite(AutoSprite):
         # Return
         return image
 
+    def convert_position(self, pos):
+        new_pos = xytuple(pos) - self.rect.topleft
+        new_pos *= self.view.screen_size
+        return new_pos / self.size
+
+    def gen_sprite_at(self, pos):
+        pos = self.convert_position(pos).map(round)
+        return self.view.gen_sprite_at(pos)
+
     @property
     def size(self):
         return self.view.screen_size
