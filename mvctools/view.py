@@ -75,6 +75,7 @@ class BaseView(object):
         # Update
         self.update()
         self.update_sprites()
+        #self.update() ??
         self.group.update()
         # Changes on a transparent background
         if self.screen and self.screen_size != self.screen.get_size():
@@ -106,16 +107,19 @@ class BaseView(object):
     def recursive_creation(self, model):
         sprite = self.create_sprite(model)
         keys = [model.key]
-        if sprite and sprite.has_view:
-            return keys
+        #if sprite and sprite.has_view:
+        #    return keys
         for child in model.get_children():
             keys.extend(self.recursive_creation(child))
         return keys
 
     def create_sprite(self, obj):
         if obj.key not in self.sprite_dct:
-            cls = self.sprite_class_dct.get(obj.__class__, None)
-            if not cls:
+            try:
+                cls = next(self.sprite_class_dct[cls]
+                               for cls in self.sprite_class_dct
+                                   if isinstance(obj, cls))
+            except StopIteration:
                 return
             self.sprite_dct[obj.key] = cls(self, model=obj)
         return self.sprite_dct[obj.key]
@@ -136,7 +140,7 @@ class BaseView(object):
                     yield sub
             yield sprite
 
-    def get_models_at(self):
+    def get_models_at(self, pos):
         models = []
         for sprite in self.gen_sprites_at(pos):
             if sprite.model not in models:

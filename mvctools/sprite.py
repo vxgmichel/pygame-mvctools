@@ -140,6 +140,7 @@ class AutoSprite(DirtySprite):
         self.layer = layer
 
     # Image property
+    
     @property
     def image(self):
         return self._image
@@ -239,9 +240,9 @@ class ViewSprite(AutoSprite):
         new_pos *= self.view.screen_size
         return new_pos / self.size
 
-    def gen_sprite_at(self, pos):
+    def gen_sprites_at(self, pos):
         pos = self.convert_position(pos).map(round)
-        return self.view.gen_sprite_at(pos)
+        return self.view.gen_sprites_at(pos)
 
     @property
     def size(self):

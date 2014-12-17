@@ -2,9 +2,9 @@
 
 # Imports
 import pygame
-from mvctools.control import BaseControl
+from mvctools import BaseControl
 from examples.loadingscreen import LoadingState
-#from examples.menuscreen import MenuState
+from examples.menuscreen import MenuState
 from examples.board import BoardState
 from examples.pausescreen import PauseState
 #from examples.settingscreen import SettingState
@@ -19,13 +19,13 @@ class Example(BaseControl):
 
 
 # Set the links between the different states
-Example.first_state = LoadingState
+Example.first_state = MenuState
 LoadingState.next_state = BoardState
 
-##MenuState.state_dct["Play"] = BoardState
-##MenuState.state_dct["Settings"] = SettingState
-##MenuState.state_dct["CPUTest"] = CpuTestState
-##MenuState.state_dct["Quit"] = None
+MenuState.state_dct["Play"] = BoardState
+MenuState.state_dct["Settings"] = BoardState
+MenuState.state_dct["CPUTest"] = BoardState
+MenuState.state_dct["Quit"] = None
 
 #BoardState.next_state = MenuState
 BoardState.pause_state = PauseState
@@ -33,7 +33,6 @@ BoardState.pause_state = PauseState
 # Run the example
 if __name__ == "__main__":
     example = Example()
-    example.resource.scale = pygame.transform.smoothscale
     example.gamedata.board_level = 0
     example.main()
 

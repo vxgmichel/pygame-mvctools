@@ -63,7 +63,8 @@ class LineSprite(AutoSprite):
         return self.image.get_rect(**kwargs)
 
 
-@from_parent(["font_size", "font_name", "antialias", "color", "opacity"])
+@from_parent(["font_size", "font_name", "antialias",
+              "color", "opacity", "reference"])
 class ChilrenLineSprite(LineSprite):
 
     @property
@@ -73,10 +74,6 @@ class ChilrenLineSprite(LineSprite):
     @property
     def pos(self):
         return self.parent.get_child_pos(self.id)
-
-    @property
-    def reference(self):
-        return self.parent.get_child_reference(self.id)
 
     def init(self, lid):
         self.id = lid
@@ -93,8 +90,6 @@ class TextView(BaseView):
     # Processing
     opacity = 1.0
     # Position
-    pos = 0,0
-    reference = "center"
     alignment = "left"
     # Margin
     margin = 0
@@ -104,14 +99,18 @@ class TextView(BaseView):
 
     def update(self):
         self.update_lines()
-        self.max_width = max(child.get_image().get_width()
-                             for child in self.lines)
+        if not self.lines:
+            self.max_width = 0
+        else:
+            self.max_width = max(child.get_image().get_width()
+                                 for child in self.lines)
 
     def get_child_text(self, lid):
         try: return self.text.splitlines()[lid]
         except IndexError: return ''
 
-    def get_child_reference(self, lid):
+    @property
+    def reference(self):
         if self.alignment in ["center", "centerx"]:
             return "midtop"
         if self.alignment in ["left", "right"]:

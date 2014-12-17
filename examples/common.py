@@ -1,25 +1,25 @@
 from mvctools import BaseModel, AutoSprite, Timer, NextStateException
-from mvctools import property_from_gamedata, xytuple, cursoredlist
-from mvctools.utils.menu import BaseEntrySprite, BaseEntryModel
-from mvctools.utils.renderer import RendererSprite
+from mvctools import from_gamedata, xytuple, cursoredlist
+from mvctools.utils.menu import EntrySprite, EntryModel
+from mvctools.utils.text import TextSprite
 
 import operator
 
 # Entry
 
-class EntryModel(BaseEntryModel):
+class StateEntryModel(EntryModel):
     
     def init(self, pos, text, state):
-        super(EntryModel, self).init(pos, text)
+        EntryModel.init(self, pos, text)
         self.state = state
 
-    def validate(self):
+    def activate(self):
         if self.state:
             self.control.push_current_state()
         self.control.register_next_state(self.state)
         raise NextStateException
     
-class EntrySprite(BaseEntrySprite):
+class EntrySprite(EntrySprite):
     
     font_name = "visitor2"
     font_color = "black"
@@ -29,7 +29,7 @@ class EntrySprite(BaseEntrySprite):
 
 # Choice
 
-class ChoiceModel(BaseEntryModel):
+class ChoiceModel(EntryModel):
     
     def init(self, pos, text, values):
         super(ChoiceModel, self).init(pos, text)
@@ -41,7 +41,7 @@ class ChoiceModel(BaseEntryModel):
 
     def register_click(self):
         self.shift_right()
-        self.validate()
+        self.activate()
 
     def shift_left(self):
         self.cursor.inc(-1)
@@ -64,11 +64,12 @@ class ChoiceSprite(EntrySprite):
 class DisplayedTimer(Timer):
     pass
 
-class TimerSprite(RendererSprite):
+class TimerSprite(TextSprite):
     
     font_ratio = 0.1
     font_name = "visitor2"
-    font_color = "black"
+    color = "black"
+    reference = "midleft"
     position_ratio = (0.7, 0.9)
   
     def init(self):
@@ -80,8 +81,12 @@ class TimerSprite(RendererSprite):
             self.digits.append(DigitSprite(self, pos, midleft))
 
     @property
-    def midleft(self):
-        return (self.settings.size * self.position_ratio).map(int)
+    def font_size(self):
+        return int(self.screen_height * self.font_ratio)
+
+    @property
+    def pos(self):
+        return (self.screen_size * self.position_ratio).map(int)
 
     def update(self):
         self.text = self.get_text()
@@ -119,13 +124,13 @@ class BackgroundModel(BaseModel):
         self.low = xytuple(0,0).map(float)
         self.high = xytuple(*self.size_ratio).map(float) - (1,1)
 
-    @property_from_gamedata("background_pos")
+    @from_gamedata("background_pos")
     def pos(self):
         # Return default value
         return (self.high-self.low)*(0.5, 0.5)
 
 
-    @property_from_gamedata("background_step")
+    @from_gamedata("background_step")
     def step(self):
         # Return default value
         return -xytuple(*self.speed_ratio)
@@ -150,10 +155,10 @@ class BackgroundSprite(AutoSprite):
     background = "box_stripes_grey"
 
     def init(self):
-        self.size_ratio = self.model.size_ratio
-        self.image = self.resource.image.getfile(self.background, self.size).copy()
+        size = self.screen_size * self.model.size_ratio
+        self.image = self.resource.image.getfile(self.background, size)
         self.layer = -1
 
     def get_rect(self):
-        topleft = -self.model.pos*self.settings.size
+        topleft = -self.model.pos*self.screen_size
         return self.image.get_rect(topleft=topleft)
