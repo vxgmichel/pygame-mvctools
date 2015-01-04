@@ -106,8 +106,6 @@ class BaseView(object):
     def recursive_creation(self, model):
         sprite = self.create_sprite(model)
         keys = [model.key]
-        #if sprite and sprite.has_view:
-        #    return keys
         for child in model.get_children():
             keys.extend(self.recursive_creation(child))
         return keys
@@ -307,18 +305,17 @@ class PatchedLayeredDirty(LayeredDirty):
         old_rect_dct = self.spritedict
         use_update = self._use_update
         # Intersection
-        if use_update and 1 > sprite.dirty and sprite.visible:
+        if use_update and sprite.visible:
             for idx in new_rect.collidelistall(rect_lst):
                 rect_clip = new_rect.clip(rect_lst[idx])
                 area = rect_clip.move((-new_rect[0], -new_rect[1]))
                 surface.blit(sprite.image, rect_clip, area, sprite.blendmode)
         # Dirty sprite
         elif sprite.visible:
-            for area in sprite.dirty_rects:
-                dest = sprite.rect.move(area.topleft)
-                if sprite.source_rect:
-                    area.move_ip(sprite.source_rect.topleft)
-                surface.blit(sprite.image, dest, area, sprite.blendmode)
+            area = None
+            if sprite.source_rect:
+                area = Rect(sprite.source_rect.topleft, new_rect.size)
+            surface.blit(sprite.image, new_rect, area, sprite.blendmode)
         # Reset
         sprite.dirty = 0 if sprite.dirty < 2 else 2
         sprite.dirty_rects = None
