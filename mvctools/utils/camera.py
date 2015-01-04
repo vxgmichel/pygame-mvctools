@@ -88,7 +88,7 @@ class CameraSprite(ViewSprite):
         return ViewSprite.transform(self, screen, dirty)
 
     def convert_position(self, pos):
-        new_pos = ViewSprite.convert_position(pos)
+        new_pos = ViewSprite.convert_position(self, pos)
         new_pos /= self.view.screen_size
         new_pos *= self.model.camera_rect.size
         return new_pos + self.model.camera_rect.topleft

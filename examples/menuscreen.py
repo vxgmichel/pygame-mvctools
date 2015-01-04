@@ -1,4 +1,4 @@
-from mvctools.utils import MenuModel, MenuSprite, EntrySprite, LineSprite
+from mvctools.utils import MenuModel, MenuSprite, EntrySprite, TextSprite
 from mvctools import BaseState, MouseController, BaseView, BaseModel
 from examples.common import BackgroundModel, BackgroundSprite, StateEntryModel 
 
@@ -39,6 +39,10 @@ class StateMenuSprite(MenuSprite):
     reference = "center"
     position_ratio = 0.5, 0.65
     size_ratio = 0.4, 0.4
+
+    # Layer
+    def get_layer(self):
+        return 1
     
     @property
     def pos(self):
@@ -48,7 +52,7 @@ class StateMenuSprite(MenuSprite):
     def size(self):
         return (self.screen_size * self.size_ratio).map(int)
 
-class TitleSprite(LineSprite):
+class TitleSprite(TextSprite):
     
     # Entries
     size_ratio = 0.2
@@ -58,6 +62,10 @@ class TitleSprite(LineSprite):
     # Position
     reference = "center"
     position_ratio = 0.5, 0.25
+
+    # Layer
+    def get_layer(self):
+        return 1
     
     @property
     def pos(self):

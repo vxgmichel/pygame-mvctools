@@ -1,8 +1,9 @@
 from mvctools import BaseModel, AutoSprite, Timer, NextStateException
-from mvctools import from_gamedata, xytuple, cursoredlist
+from mvctools import BaseView, from_gamedata, xytuple, cursoredlist
 from mvctools.utils.menu import EntrySprite, EntryModel
 from mvctools.utils.text import TextSprite
-
+from mvctools.utils.camera import CameraSprite, CameraModel
+from pygame import Rect
 import operator
 
 # Entry
@@ -114,26 +115,30 @@ class DigitSprite(AutoSprite):
 
 # Background
 
-class BackgroundModel(BaseModel):
+class BackgroundModel(CameraModel):
 
     size_ratio = 4, 4
-    speed_ratio = 0.05, 0.1
-    background = "box_stripes_grey"
+    speed_ratio = 0.02, 0.05
 
     def init(self):
-        self.low = xytuple(0,0).map(float)
-        self.high = xytuple(*self.size_ratio).map(float) - (1,1)
+        self.init_camera(self.rect)
+        self.low = 0, 0
+        self.pos = xytuple(0, 0).map(float)
+        self.high = self.size - self.rect.size
 
-    @from_gamedata("background_pos")
-    def pos(self):
-        # Return default value
-        return (self.high-self.low)*(0.5, 0.5)
+    @property
+    def size(self):
+        path = BackgroundSprite.BackgroundView.bgd_image
+        size = self.control.resource.get(path).get_size()
+        return xytuple(size)
 
+    @from_gamedata("background_rect")
+    def rect(self):
+        return Rect((0,0), xytuple(self.size) / self.size_ratio)
 
     @from_gamedata("background_step")
     def step(self):
-        # Return default value
-        return -xytuple(*self.speed_ratio)
+        return self.size * self.speed_ratio
 
     def is_valid_pos(self, pos):
         return all(map(operator.le, self.low, pos) + \
@@ -143,22 +148,22 @@ class BackgroundModel(BaseModel):
         for i in (1,-1):
             for j in (1,-1):
                 shift = self.step * (i,j)
-                shift *= (1.0/self.state.current_fps,)*2
-                new_pos = self.pos + shift
+                shift *= (self.delta,)*2
+                new_pos = xytuple(self.pos) + shift
                 if self.is_valid_pos(new_pos):
-                    self.pos = new_pos
+                    self.rect.topleft = self.pos = new_pos
+                    self.set_camera(self.rect)
                     self.step *= (i,j)
                     return
 
-class BackgroundSprite(AutoSprite):
+class BackgroundSprite(CameraSprite):
 
-    background = "box_stripes_grey"
+    class BackgroundView(BaseView):
+        bgd_image = "image/box_stripes_grey"
+        bgd_color = "lightblue"
 
-    def init(self):
-        size = self.screen_size * self.model.size_ratio
-        self.image = self.resource.image.getfile(self.background, size)
-        self.layer = -1
+        @property
+        def size(self):
+            return self.model.size
 
-    def get_rect(self):
-        topleft = -self.model.pos*self.screen_size
-        return self.image.get_rect(topleft=topleft)
+    view_cls = BackgroundView

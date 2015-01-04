@@ -73,9 +73,8 @@ class BaseView(object):
         # Create screen
         self.update_screen()
         # Update
-        self.update()
         self.update_sprites()
-        #self.update() ??
+        self.update()
         self.group.update()
         # Changes on a transparent background
         if self.screen and self.screen_size != self.screen.get_size():

@@ -108,7 +108,7 @@ class MenuView(BaseView):
     alignment = "left"
     # Margins
     margins = 0,0
-
+    
     def update(self):
         self.rect_dict = {}
         # Get rects
